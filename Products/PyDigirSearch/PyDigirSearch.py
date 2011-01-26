@@ -49,13 +49,24 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
-        self.setSession('CollectionCode', REQUEST.get('CollectionCode', ''))
-        self.setSession('Family', REQUEST.get('Family', ''))
-        self.setSession('Genus', REQUEST.get('Genus', ''))
-        self.setSession('Species', REQUEST.get('Species', ''))
-        self.setSession('ScientificNameAuthor', REQUEST.get('ScientificNameAuthor', ''))
-        self.setSession('Country', REQUEST.get('Country', ''))
-        self.setSession('Locality', REQUEST.get('Locality', ''))
+        self.setSession('CollectionCode',
+            REQUEST.get('CollectionCode', REQUEST.SESSION.get('CollectionCode')))
+        self.setSession('Family',
+            REQUEST.get('Family', REQUEST.SESSION.get('Family')))
+        self.setSession('Genus',
+            REQUEST.get('Genus', REQUEST.SESSION.get('Genus')))
+        self.setSession('Species',
+            REQUEST.get('Species', REQUEST.SESSION.get('Species')))
+        self.setSession('ScientificNameAuthor',
+            REQUEST.get('ScientificNameAuthor', REQUEST.SESSION.get('ScientificNameAuthor')))
+        self.setSession('Country',
+            REQUEST.get('Country', REQUEST.SESSION.get('Country')))
+        self.setSession('Locality',
+            REQUEST.get('Locality', REQUEST.SESSION.get('Locality')))
+        self.setSession('skey',
+            REQUEST.get('skey', REQUEST.SESSION.get('skey', 'CollectionCode')))
+        self.setSession('page',
+            REQUEST.get('page', REQUEST.SESSION.get('page', '1')))
         response = self.make_request(REQUEST)
         records, match_count, record_count, end_of_records = self.parse_response(response)
         all_records = [number for number in range(int(match_count))]
@@ -151,15 +162,15 @@ class PyDigirSearch(SimpleItem):
         and_operator = etree.SubElement(filter, "and")
         equals = etree.SubElement(and_operator, "equals")
         collectioncode = etree.SubElement(equals, "{http://digir.net/schema/conceptual/darwin/2003/1.0}CollectionCode")
-        collectioncode.text = params.get('CollectionCode', '')
+        collectioncode.text = params.SESSION.get('CollectionCode', '')
 
         like = etree.SubElement(and_operator, "like")
         family = etree.SubElement(like, "{http://digir.net/schema/conceptual/darwin/2003/1.0}Family")
-        family.text = params.get('Family', '')
+        family.text = params.SESSION.get('Family', '')
 
         #build records
         try:
-            page = int(params.get('page', '1'))
+            page = int(params.SESSION.get('page', '1'))
         except ValueError:
             page = 1
 
