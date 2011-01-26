@@ -1,8 +1,10 @@
 import re
 import os
 from os.path import join, dirname, splitext
+import urllib
 
-from lxml import etree
+from lxml import etree, objectify
+
 from App.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import view_management_screens, view
@@ -45,114 +47,44 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
-        objects = self.get_response()
-        return self.results_html(REQUEST, objects=objects)
+        response = self.make_request()
+        records, match_count, record_count, end_of_records = self.parse_response(response)
+
+        return self.results_html(REQUEST, objects=records)
 
     security.declarePrivate('get_response')
-    def get_response(self):
+    def parse_response(self, response):
         """ """
-        return [{
-            'MinimumDepth': '',
-            'Kingdom': 'Protozoa',
-            'Notes': 'På nåledække/begravede kviste i granskov',
-            'CollectorNumber': '',
-            'Family': 'Reticulariaceae',
-            'CatalogNumber': '12626092',
-            'CoordinatePrecision': '500.0',
-            'Latitude': '55.68502',
-            'Class': 'Myxomycetes',
-            'CollectionCode': 'Svampefund2006',
-            'Phylum': 'Myxomycota',
-            'RelationshipType': '',
-            'Subspecies': '',
-            'YearCollected': '2006',
-            'DayIdentified': '',
-            'Sex': '',
-            'County': 'Københavns Amt',
-            'MonthCollected': '1',
-            'MonthIdentified': '',
-            'Genus': 'Lycoperdon',
-            'Species': 'pyriforme',
-            'TimeOfDay': '',
-            'Longitude': '12.356238',
-            'FieldNumber': '',
-            'PreviousCatalogNumber': '',
-            'DayCollected': '2',
-            'DateLastModified': '2007-05-22T22:00:00',
-            'JulianDay': '2',
-            'MaximumElevation': '',
-            'ContinentOcean': 'Europe',
-            'MaximumDepth': '',
-            'ScientificName': 'Lycoperdon pyriforme Schaeff.',
-            'Country': 'Denmark',
-            'InstitutionCode': 'DKMycSoc',
-            'IndividualCount': '',
-            'ScientificNameAuthor': 'Schaeff.',
-            'RelatedCatalogItem': '',
-            'BasisOfRecord': 'O',
-            'IdentifiedBy': 'Henrik Mathiassen',
-            'Locality': 'Vestskoven ved Herstedvester',
-            'TypeStatus': '',
-            'Order': 'Liceales',
-            'YearIdentified': '',
-            'PreparationType': '',
-            'StateProvince': '',
-            'Collector': '',
-            'MinimumElevation': ''},
-            {
-            'MinimumDepth': '',
-            'Kingdom': 'Animalia',
-            'Notes': 'På nåledække/begravede kviste i granskov',
-            'CollectorNumber': '',
-            'Family': 'Granskov',
-            'CatalogNumber': '12626092',
-            'CoordinatePrecision': '500.0',
-            'Latitude': '55.68502',
-            'Class': 'Myxomycetes2',
-            'CollectionCode': 'Svampefund2006',
-            'Phylum': 'Myxomycota',
-            'RelationshipType': '',
-            'Subspecies': '',
-            'YearCollected': '2006',
-            'DayIdentified': '',
-            'Sex': '',
-            'County': 'Københavns Amt',
-            'MonthCollected': '1',
-            'MonthIdentified': '',
-            'Genus': 'Lycoperdon',
-            'Species': 'perlatum',
-            'TimeOfDay': '',
-            'Longitude': '12.541786',
-            'FieldNumber': '',
-            'PreviousCatalogNumber': '',
-            'DayCollected': '2',
-            'DateLastModified': '2007-05-22T22:00:00',
-            'JulianDay': '6',
-            'MaximumElevation': '',
-            'ContinentOcean': 'Europe',
-            'MaximumDepth': '',
-            'ScientificName': 'Lycoperdon perlatum Pers.',
-            'Country': 'Denmark',
-            'InstitutionCode': 'DKMycSoc',
-            'IndividualCount': '',
-            'ScientificNameAuthor': 'Schaeff.',
-            'RelatedCatalogItem': '',
-            'BasisOfRecord': 'O',
-            'IdentifiedBy': 'Henrik Mathiassen',
-            'Locality': 'Vestskoven ved Herstedvester',
-            'TypeStatus': '',
-            'Order': 'Liceales',
-            'YearIdentified': '',
-            'PreparationType': '',
-            'StateProvince': '',
-            'Collector': '',
-            'MinimumElevation': ''}
-        ]
+        results = etree.fromstring(response)
+        ns = {
+            'xmlns': 'http://digir.net/schema/protocol/2003/1.0',
+            'darwin': 'http://digir.net/schema/conceptual/darwin/2003/1.0',
+        }
+
+        records = []
+        for record in results.xpath('xmlns:content/xmlns:record', namespaces=ns):
+            record_data = {}
+            for child in record.getchildren():
+                record_data.setdefault(child.tag.replace('{%s}' % ns['darwin'], ''), child.text)
+            records.append(record_data)
+
+        diagnostics = results.xpath('xmlns:diagnostics', namespaces=ns)[0]
+        match_count = diagnostics.xpath('xmlns:diagnostic[@code="MATCH_COUNT"]', namespaces=ns)[0].text
+        record_count = diagnostics.xpath('xmlns:diagnostic[@code="RECORD_COUNT"]', namespaces=ns)[0].text
+        end_of_records = diagnostics.xpath('xmlns:diagnostic[@code="END_OF_RECORDS"]', namespaces=ns)[0].text
+
+        return records, match_count, record_count, end_of_records
 
     security.declarePrivate('make_request')
     def make_request(self):
         """ """
-        pass
+        xml = self.build_xml()
+        params = urllib.urlencode({'doc': xml})
+        opener = urllib.FancyURLopener({})
+        f = opener.open('http://localhost:8080/DigirProvider/', params)
+        response = f.read()
+        f.close()
+        return response
 
     security.declarePrivate('build_xml')
     def build_xml(self):
