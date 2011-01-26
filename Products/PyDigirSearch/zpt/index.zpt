@@ -10,6 +10,7 @@
 	</metal:block>
 
 	<metal:block fill-slot="body">
+		<tal:block condition="request/reset_search|nothing" content="here/delSessionInfo"/>
 		<div id="center_content" tal:define="collections python:['Svampefund2006','Ravn&Riis-Nielsen2006', 'SineColl', 'Svendsen', 'WOLSC']">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
@@ -24,31 +25,32 @@
 				</div>
 				<div class="field">
 					<label for="family" i18n:translate="">Family</label>
-					<input type="text" name="Family:utf8:ustring"/>
+					<input type="text" name="Family:utf8:ustring" tal:attributes="value request/SESSION/Family|nothing"/>
 				</div>
 				<div class="field">
 					<label for="genus" i18n:translate="">Genus</label>
-					<input type="text" name="Genus:utf8:ustring"/>
+					<input type="text" name="Genus:utf8:ustring" tal:attributes="value request/SESSION/Genus|nothing"/>
 				</div>
 				<div class="field">
 					<label for="species" i18n:translate="">Species</label>
-					<input type="text" name="Species:utf8:ustring"/>
+					<input type="text" name="Species:utf8:ustring" tal:attributes="value request/SESSION/Species|nothing"/>
 				</div>
 				<div class="field">
 					<label for="scientificnameauthor" i18n:translate="">Scientific Name Author</label>
-					<input type="text" name="ScientificNameAuthor:utf8:ustring"/>
+					<input type="text" name="ScientificNameAuthor:utf8:ustring" tal:attributes="value request/SESSION/ScientificNameAuthor|nothing"/>
 				</div>
 				<div class="field">
 					<label for="country" i18n:translate="">Country</label>
-					<input type="text" name="Country:utf8:ustring"/>
+					<input type="text" name="Country:utf8:ustring" tal:attributes="value request/SESSION/Country|nothing"/>
 				</div>
 				<div class="field">
 					<label for="locality" i18n:translate="">Locality</label>
-					<input type="text" name="Locality:utf8:ustring"/>
+					<input type="text" name="Locality:utf8:ustring" tal:attributes="value request/SESSION/Locality|nothing"/>
 				</div>
 				<div class="field">
 					<input type="submit" name="search" value="Search" i18n:attributes="value"/>
 				</div>
+				<input type="hidden" name="skey" tal:attributes="value string:CollectionCode" />
 			</form>
 		</div>
 	</metal:block>

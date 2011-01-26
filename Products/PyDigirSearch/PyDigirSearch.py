@@ -49,6 +49,13 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
+        self.setSession('CollectionCode', REQUEST.get('CollectionCode', ''))
+        self.setSession('Family', REQUEST.get('Family', ''))
+        self.setSession('Genus', REQUEST.get('Genus', ''))
+        self.setSession('Species', REQUEST.get('Species', ''))
+        self.setSession('ScientificNameAuthor', REQUEST.get('ScientificNameAuthor', ''))
+        self.setSession('Country', REQUEST.get('Country', ''))
+        self.setSession('Locality', REQUEST.get('Locality', ''))
         response = self.make_request(REQUEST)
         records, match_count, record_count, end_of_records = self.parse_response(response)
         all_records = [number for number in range(int(match_count))]

@@ -17,8 +17,6 @@
 				$('#row_'+record_id).removeClass('PyDigirThisRecord');
 			}
 		</script>
-		<!-- <script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/bap.js"></script>
-		<script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/showLoading.js"></script>-->
 		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
 	</metal:block>
 
@@ -203,12 +201,6 @@
 									tal:attributes="onclick string:javascript:hide_me('${repeat/record/index}')">Close</a>
 								</p>
 							</div>
-							<!-- <div class="clearer"></div>
-							<div class="PyDigirLabel" i18n:translate="">Collection number</div>
-							<div class="PyDigirValue" tal:content="record/CollectionCode"/>
-
-							<div class="PyDigirLabel" i18n:translate="">Country</div>
-							<div class="PyDigirValue" tal:content="record/Country"/> -->
 						</td>
 					</tr>
 				</tal:block>
@@ -261,6 +253,11 @@
 				</span>
 			</div>
 			</tal:block>
+
+		<p>
+			<a tal:attributes="href string:${here/absolute_url}/search?reset_search=True" i18n:translate="">New search</a>
+			|
+			<a tal:attributes="href string:${here/absolute_url}/search" i18n:translate="">Modify search</a></p>
 
 		</div>
 	</metal:block>
