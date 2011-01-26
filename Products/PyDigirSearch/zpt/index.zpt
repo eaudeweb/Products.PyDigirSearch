@@ -13,7 +13,7 @@
 		<div id="center_content" tal:define="collections python:['CollectionX']">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
-			<form title="search_form" action="search">
+			<form title="search_form" action="search" method="post">
 				<div class="field">
 					<label for="collection" i18n:translate="">Collection</label>
 					<select id="collection" name="collection:utf8:ustring">
