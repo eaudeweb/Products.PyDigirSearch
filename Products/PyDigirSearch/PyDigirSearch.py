@@ -49,7 +49,7 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
-        response = self.make_request()
+        response = self.make_request(REQUEST)
         records, match_count, record_count, end_of_records = self.parse_response(response)
         all_records = [number for number in range(int(match_count))]
         pages = self.itemsPaginator(all_records, REQUEST)
@@ -98,9 +98,9 @@ class PyDigirSearch(SimpleItem):
         return records, match_count, record_count, end_of_records
 
     security.declarePrivate('make_request')
-    def make_request(self):
+    def make_request(self, params):
         """ """
-        xml = self.build_xml()
+        xml = self.build_xml(params)
         params = urllib.urlencode({'doc': xml})
         opener = urllib.FancyURLopener({})
         f = opener.open('http://10.0.0.23:8085/DigirProvider/', params)
@@ -109,7 +109,7 @@ class PyDigirSearch(SimpleItem):
         return response
 
     security.declarePrivate('build_xml')
-    def build_xml(self):
+    def build_xml(self, params):
         """ """
         xmlns = "http://digir.net/schema/protocol/2003/1.0"
         xsd = "http://www.w3.org/2001/XMLSchema"
@@ -141,12 +141,23 @@ class PyDigirSearch(SimpleItem):
         filter = etree.SubElement(search, "filter")
 
         #build filters
-        equals = etree.SubElement(filter, "equals")
+        and_operator = etree.SubElement(filter, "and")
+        equals = etree.SubElement(and_operator, "equals")
         collectioncode = etree.SubElement(equals, "{http://digir.net/schema/conceptual/darwin/2003/1.0}CollectionCode")
-        collectioncode.text = "Svampefund2006"
+        collectioncode.text = params.get('CollectionCode', '')
+
+        like = etree.SubElement(and_operator, "like")
+        family = etree.SubElement(like, "{http://digir.net/schema/conceptual/darwin/2003/1.0}Family")
+        family.text = params.get('Family', '')
 
         #build records
-        records = etree.SubElement(search, "records", limit=str(items_per_page), start="0")
+        try:
+            page = int(params.get('page', '1'))
+        except ValueError:
+            page = 1
+
+        start = str(page*items_per_page)
+        records = etree.SubElement(search, "records", limit=str(items_per_page), start=start)
         structure = etree.SubElement(records, "structure", schemaLocation="http://digir.sourceforge.net/schema/conceptual/darwin/full/2003/1.0/darwin2full.xsd")
         count = etree.SubElement(search, "count")
         count.text = "true"

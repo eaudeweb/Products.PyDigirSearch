@@ -10,7 +10,7 @@
 	</metal:block>
 
 	<metal:block fill-slot="body">
-		<div id="center_content" tal:define="collections python:['CollectionX']">
+		<div id="center_content" tal:define="collections python:['Svampefund2006','Ravn&Riis-Nielsen2006', 'SineColl', 'Svendsen', 'WOLSC']">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
 			<form title="search_form" action="search" method="post">
