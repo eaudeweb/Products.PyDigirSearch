@@ -5,113 +5,134 @@
 	</metal:block>
 
 	<metal:block metal:fill-slot="head">
+		<script type="text/javascript">
+			function show_me(object_id){
+				$('tr[id^="collection"]').hide();
+				$('#'+object_id).show();
+			}
+		</script>
 		<!-- <script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/bap.js"></script>
-		<script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/showLoading.js"></script>
-		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:${skin_files_path}/bap_style.css" /> -->
+		<script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/showLoading.js"></script>-->
+		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
 	</metal:block>
 
 	<metal:block fill-slot="body">
 		<div id="center_content"
 			tal:define="objects options/objects;
-					skey request/skey|string:collection;
+					skey request/skey|string:CollectionCode;
 					">
 			<h1 i18n:translate="">Search results</h1>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
 			<table class="datatable" tal:condition="options">
 				<tr>
 					<th>
-						<tal:block condition="python:skey=='collection'">
+						<tal:block condition="python:skey=='CollectionCode'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=collection_r">Collection</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=CollectionCode_r">Collection</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='collection'">
+						<tal:block condition="python:skey!='CollectionCode'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=collection">Collection</a>
-							<img tal:condition="python:skey=='collection_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=CollectionCode">Collection</a>
+							<img tal:condition="python:skey=='CollectionCode_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 					<th>
-						<tal:block condition="python:skey=='family'">
+						<tal:block condition="python:skey=='Family'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=family_r">Family</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Family_r">Family</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='family'">
+						<tal:block condition="python:skey!='Family'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=family">Family</a>
-							<img tal:condition="python:skey=='family_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Family">Family</a>
+							<img tal:condition="python:skey=='Family_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 					<th>
-						<tal:block condition="python:skey=='genus'">
+						<tal:block condition="python:skey=='Genus'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=genus_r">Genus</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Genus_r">Genus</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='genus'">
+						<tal:block condition="python:skey!='Genus'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=genus">Genus</a>
-							<img tal:condition="python:skey=='genus_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Genus">Genus</a>
+							<img tal:condition="python:skey=='Genus_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 					<th>
-						<tal:block condition="python:skey=='species'">
+						<tal:block condition="python:skey=='Species'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=species_r">Species</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Species_r">Species</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='species'">
+						<tal:block condition="python:skey!='Species'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=species">Species</a>
-							<img tal:condition="python:skey=='species_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Species">Species</a>
+							<img tal:condition="python:skey=='Species_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 					<th>
-						<tal:block condition="python:skey=='scientific_name_author'">
+						<tal:block condition="python:skey=='ScientificNameAuthor'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=scientific_name_author_r">Scientific Name Author</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=ScientificNameAuthor_r">Scientific Name Author</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='scientific_name_author'">
+						<tal:block condition="python:skey!='ScientificNameAuthor'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=scientific_name_author">Scientific Name Author</a>
-							<img tal:condition="python:skey=='scientific_name_author_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=ScientificNameAuthor">Scientific Name Author</a>
+							<img tal:condition="python:skey=='ScientificNameAuthor_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 					<th>
-						<tal:block condition="python:skey=='country'">
+						<tal:block condition="python:skey=='Country'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=country_r">Country</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Country_r">Country</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='country'">
+						<tal:block condition="python:skey!='Country'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=country">Country</a>
-							<img tal:condition="python:skey=='country_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Country">Country</a>
+							<img tal:condition="python:skey=='Country_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 					<th>
-						<tal:block condition="python:skey=='locality'">
+						<tal:block condition="python:skey=='Locality'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=locality_r">Locality</a>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Locality_r">Locality</a>
 							<img src="misc_/Naaya/sort_asc.gif" style="vertical-align: middle"/>
 						</tal:block>
-						<tal:block condition="python:skey!='locality'">
+						<tal:block condition="python:skey!='Locality'">
 							<a i18n:translate=""
-								tal:attributes="href string:${here/absolute_url}/search?skey=locality">Locality</a>
-							<img tal:condition="python:skey=='locality_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
+								tal:attributes="href string:${here/absolute_url}/search?skey=Locality">Locality</a>
+							<img tal:condition="python:skey=='Locality_r'" src="misc_/Naaya/sort_desc.gif" style="vertical-align: middle"/>
 						</tal:block>
 					</th>
 				</tr>
 				<tal:block repeat="object objects">
-					<td tal:content="object/collection"/>
-					<td tal:content="object/family"/>
-					<td tal:content="object/genus"/>
-					<td tal:content="object/species"/>
-					<td tal:content="object/scientific_name_author"/>
-					<td tal:content="object/country"/>
-					<td tal:content="object/locality"/>
+					<tr>
+						<td>
+							<a tal:content="object/CollectionCode" href="#"
+							tal:attributes="onclick string:javascript:show_me('collection_${repeat/object/index}')"/></td>
+						<td tal:content="object/Family"/>
+						<td tal:content="object/Genus"/>
+						<td tal:content="object/Species"/>
+						<td tal:content="object/ScientificNameAuthor"/>
+						<td tal:content="object/Country"/>
+						<td tal:content="object/Locality"/>
+					</tr>
+					<tr tal:attributes="id string:collection_${repeat/object/index}" style="display:none">
+						<td colspan="7" style="border:thin">
+							<div style="float:left;width:600px;">
+								<div class="PyDigirLabel" i18n:translate="">Collection number</div>
+								<div class="PyDigirValue" tal:content="object/CollectionCode"/>
+								<div class="PyDigirLabel" i18n:translate="">Country</div>
+								<div class="PyDigirValue" tal:content="object/Country"/>
+							</div>
+							<div style="width:75px;float:left">kjsdhflksdjhfdjh nlkdjsfhgl ksjhflksjdhflgk jhlndfkjhgdsf sdfg</div>
+						</td>
+					</tr>
 				</tal:block>
 			</table>
 		</div>

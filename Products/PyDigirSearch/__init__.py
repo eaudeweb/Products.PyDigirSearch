@@ -13,6 +13,6 @@ def initialize(context):
             PyDigirSearch.manage_add_search),
     )
 
-#misc_ = {
-#    'search_digir.js':ImageFile('www/js/search_digir.js', globals()),
-#}
+misc_ = {
+    'digir_search_style.css':ImageFile('www/css/digir_search_style.css', globals()),
+}

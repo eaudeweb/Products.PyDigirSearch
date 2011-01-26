@@ -45,7 +45,7 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
-        objects = []
+        objects = self.get_response()
         return self.results_html(REQUEST, objects=objects)
 
     security.declarePrivate('get_response')
