@@ -14,53 +14,7 @@
 		<div id="center_content"
 			tal:define="objects options/objects;
 					skey request/skey|string:collection;
-					fake python:objects.sort(key=lambda x:x.collection);
 					">
-			<tal:block condition="python:skey=='collection_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.collection, reverse=True)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='family'">
-				<tal:block define="fake python:objects.sort(key=lambda x:
-					here.family)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='family_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.family, reverse=True)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='genus'">
-				<tal:block define="fake python:objects.sort(key=lambda x:
-					here.genus)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='genus_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.genus, reverse=True)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='species'">
-				<tal:block define="fake python:objects.sort(key=lambda x:
-					here.species)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='species_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.species, reverse=True)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='scientific_name_author'">
-				<tal:block define="fake python:objects.sort(key=lambda x:
-					here.scientific_name_author)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='scientific_name_author_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.scientific_name_author, reverse=True)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='country'">
-				<tal:block define="fake python:objects.sort(key=lambda x:
-					here.country)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='country_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.country, reverse=True)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='locality'">
-				<tal:block define="fake python:objects.sort(key=lambda x:
-					here.locality)"/>
-			</tal:block>
-			<tal:block condition="python:skey=='locality_r'">
-				<tal:block define="fake python:objects.sort(key=lambda x:x.locality, reverse=True)"/>
-			</tal:block>
 			<h1 i18n:translate="">Search results</h1>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
 			<table class="datatable" tal:condition="options">
