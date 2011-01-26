@@ -1,0 +1,20 @@
+<metal:block i18n:domain="portal_translations" metal:use-macro="here/standard_template_macro">
+
+	<metal:block metal:fill-slot="title">
+			<title tal:content="string:${here/title} | ${here/site_title}" />
+	</metal:block>
+
+	<metal:block metal:fill-slot="head">
+		<!-- <script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/bap.js"></script>
+		<script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/showLoading.js"></script>
+		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:${skin_files_path}/bap_style.css" /> -->
+	</metal:block>
+
+	<metal:block fill-slot="body">
+		<div id="center_content">
+			<h1 i18n:translate="">Search</h1>
+			<p i18n:translate="">Please enter your search criteria.</p>
+		</div>
+	</metal:block>
+
+</metal:block>

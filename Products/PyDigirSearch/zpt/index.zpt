@@ -1,0 +1,22 @@
+<metal:block i18n:domain="portal_translations" metal:use-macro="here/standard_template_macro">
+
+	<metal:block metal:fill-slot="title">
+			<title tal:content="string:${here/title} | ${here/site_title}" />
+	</metal:block>
+
+	<metal:block metal:fill-slot="head">
+		<!-- <script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/search_digir.js"></script>
+		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:${skin_files_path}/search_digir_style.css" /> -->
+	</metal:block>
+
+	<metal:block fill-slot="body">
+		<div id="center_content">
+			<h1 i18n:translate="">Search</h1>
+			<p i18n:translate="">Please enter your search criteria.</p>
+			<form title="search_form" action="search">
+				<label for=""></label>
+			</form>
+		</div>
+	</metal:block>
+
+</metal:block>

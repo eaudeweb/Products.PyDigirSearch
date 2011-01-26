@@ -1,0 +1,10 @@
+README
+setup.py
+Products/__init__.py
+Products.PyDigirSearch.egg-info/PKG-INFO
+Products.PyDigirSearch.egg-info/SOURCES.txt
+Products.PyDigirSearch.egg-info/dependency_links.txt
+Products.PyDigirSearch.egg-info/not-zip-safe
+Products.PyDigirSearch.egg-info/top_level.txt
+Products/PyDigirSearch/PyDigirSearch.py
+Products/PyDigirSearch/__init__.py
