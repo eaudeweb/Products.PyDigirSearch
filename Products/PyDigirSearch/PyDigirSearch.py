@@ -9,6 +9,7 @@ from App.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import view_management_screens, view
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
+from naaya.core.paginator import DiggPaginator, EmptyPage, InvalidPage
 
 from OFS.SimpleItem import SimpleItem
 
@@ -25,6 +26,7 @@ def manage_add_search(self, id, REQUEST=None):
 from Products.NaayaCore.LayoutTool.DiskFile import allow_path
 allow_path('Products.PyDigirSearch:www/css/')
 
+items_per_page = 10
 
 class PyDigirSearch(SimpleItem):
     """
@@ -49,8 +51,28 @@ class PyDigirSearch(SimpleItem):
         """ """
         response = self.make_request()
         records, match_count, record_count, end_of_records = self.parse_response(response)
+        all_records = [number for number in range(int(match_count))]
+        pages = self.itemsPaginator(all_records, REQUEST)
 
-        return self.results_html(REQUEST, objects=records)
+        return self.results_html(REQUEST, records=records, pages=pages)
+
+    def itemsPaginator(self, records, REQUEST):
+        """ """
+        paginator = DiggPaginator(records, items_per_page, body=5, padding=2, orphans=5)   #Show 10 documents per page
+
+        # Make sure page request is an int. If not, deliver first page.
+        try:
+            page = int(REQUEST.get('page', '1'))
+        except ValueError:
+            page = 1
+
+        # If page request (9999) is out of range, deliver last page of results.
+        try:
+            items = paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            items = paginator.page(paginator.num_pages)
+
+        return items
 
     security.declarePrivate('get_response')
     def parse_response(self, response):
@@ -81,7 +103,7 @@ class PyDigirSearch(SimpleItem):
         xml = self.build_xml()
         params = urllib.urlencode({'doc': xml})
         opener = urllib.FancyURLopener({})
-        f = opener.open('http://localhost:8080/DigirProvider/', params)
+        f = opener.open('http://10.0.0.23:8085/DigirProvider/', params)
         response = f.read()
         f.close()
         return response
@@ -108,9 +130,9 @@ class PyDigirSearch(SimpleItem):
         sendTime = etree.SubElement(header, "sendTime")
         sendTime.text = '2003-06-05T11:57:00-03:00'
         source = etree.SubElement(header, "source")
-        source.text = 'http://localhost:8080'
+        source.text = 'http://10.0.0.23:8085'
         destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
-        destination.text = 'http://localhost:8080/DigirProvider/'
+        destination.text = 'http://10.0.0.23:8085/DigirProvider/'
         type = etree.SubElement(header, "type",)
         type.text = 'search'
 
@@ -124,7 +146,7 @@ class PyDigirSearch(SimpleItem):
         collectioncode.text = "Svampefund2006"
 
         #build records
-        records = etree.SubElement(search, "records", limit="10", start="0")
+        records = etree.SubElement(search, "records", limit=str(items_per_page), start="0")
         structure = etree.SubElement(records, "structure", schemaLocation="http://digir.sourceforge.net/schema/conceptual/darwin/full/2003/1.0/darwin2full.xsd")
         count = etree.SubElement(search, "count")
         count.text = "true"

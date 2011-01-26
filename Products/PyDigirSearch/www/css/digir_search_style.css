@@ -1,8 +1,28 @@
 .PyDigirLabel{
-	font-weight:bold;
-	clear:left;
-	float:left;
-	width:12em;
+	width:20%;
 }
 .PyDigirValue{
+}
+.PyDigir_collection_details{
+	width:50%;
+	float:left;
+}
+.PyDigirMap{
+	float:left;
+	width:50%;
+}
+.PyDigirThisPage{
+	font-weight:bold;
+	font-size:125%;
+	text-decoration:none !important;
+}
+.PyDigirThisRecord{
+	font-weight:bold;
+	background-color:#CFE0B4;
+	border-top:1px solid #969696;
+	border-left:1px solid #969696;
+	border-right:1px solid #969696;
+}
+.pagination{
+	text-align:center;
 }

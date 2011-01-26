@@ -6,9 +6,15 @@
 
 	<metal:block metal:fill-slot="head">
 		<script type="text/javascript">
-			function show_me(object_id){
+			function show_me(record_id){
 				$('tr[id^="collection"]').hide();
-				$('#'+object_id).show();
+				$('#collection_'+record_id).show();
+				$('tr[id^="row"]').removeClass('PyDigirThisRecord');
+				$('#row_'+record_id).addClass('PyDigirThisRecord');
+			}
+			function hide_me(record_id){
+				$('#collection_'+record_id).hide();
+				$('#row_'+record_id).removeClass('PyDigirThisRecord');
 			}
 		</script>
 		<!-- <script type="text/javascript" tal:attributes="src string:/misc_/BAPDatabase/bap.js"></script>
@@ -18,8 +24,10 @@
 
 	<metal:block fill-slot="body">
 		<div id="center_content"
-			tal:define="objects options/objects;
+			tal:define="records options/records;
+					pages options/pages;
 					skey request/skey|string:CollectionCode;
+					page python:request.get('page', '');
 					">
 			<h1 i18n:translate="">Search results</h1>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
@@ -110,31 +118,150 @@
 						</tal:block>
 					</th>
 				</tr>
-				<tal:block repeat="object objects">
-					<tr>
+				<tal:block repeat="record records">
+					<tr tal:attributes="id string:row_${repeat/record/index}">
 						<td>
-							<a tal:content="object/CollectionCode" href="#"
-							tal:attributes="onclick string:javascript:show_me('collection_${repeat/object/index}')"/></td>
-						<td tal:content="object/Family"/>
-						<td tal:content="object/Genus"/>
-						<td tal:content="object/Species"/>
-						<td tal:content="object/ScientificNameAuthor"/>
-						<td tal:content="object/Country"/>
-						<td tal:content="object/Locality"/>
+							<a tal:content="record/CollectionCode" href="#"
+							tal:attributes="onclick string:javascript:show_me('${repeat/record/index}')"/></td>
+						<td tal:content="record/Family"/>
+						<td tal:content="record/Genus"/>
+						<td tal:content="record/Species"/>
+						<td tal:content="record/ScientificNameAuthor"/>
+						<td tal:content="record/Country"/>
+						<td tal:content="record/Locality"/>
 					</tr>
-					<tr tal:attributes="id string:collection_${repeat/object/index}" style="display:none">
-						<td colspan="7" style="border:thin">
-							<div style="float:left;width:600px;">
-								<div class="PyDigirLabel" i18n:translate="">Collection number</div>
-								<div class="PyDigirValue" tal:content="object/CollectionCode"/>
-								<div class="PyDigirLabel" i18n:translate="">Country</div>
-								<div class="PyDigirValue" tal:content="object/Country"/>
+					<tr tal:attributes="id string:collection_${repeat/record/index}" style="display:none">
+						<td colspan="7">
+							<div class="PyDigir_collection_details">
+							<table class="datatable">
+								<tr>
+									<th class="PyDigirLabel" i18n:translate="">Collector number</th>
+									<td tal:content="record/Collector"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Collection number</th>
+									<td tal:content="record/CollectionCode"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Country</th>
+									<td tal:content="record/Country"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">County</th>
+									<td tal:content="record/County"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Locality</th>
+									<td tal:content="record/Locality"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Latitude</th>
+									<td tal:content="record/Latitude"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Longitude</th>
+									<td tal:content="record/Longitude"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">MinimumElevation</th>
+									<td tal:content="record/MinimumElevation"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">MaximumElevation</th>
+									<td tal:content="record/MaximumElevation"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Date collected</th>
+									<td tal:content="string:${record/YearCollected}/${record/MonthCollected}/${record/DayCollected}"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Family</th>
+									<td tal:content="record/Family"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Genus</th>
+									<td tal:content="record/Genus"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Species</th>
+									<td tal:content="record/Species"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">IdentifiedBy</th>
+									<td tal:content="record/IdentifiedBy"/>
+								</tr>
+								<tr>
+									<th i18n:translate="">Notes</th>
+									<td tal:content="record/Notes"/>
+								</tr>
+							</table>
 							</div>
-							<div style="width:75px;float:left">kjsdhflksdjhfdjh nlkdjsfhgl ksjhflksjdhflgk jhlndfkjhgdsf sdfg</div>
+							<div class="PyDigirMap">
+								<img tal:attributes="src string:${here/absolute_url}/Harta.jpg" alt=""/>
+								<p style="text-align:center">
+									<a href="#" i18n:translate=""
+									tal:attributes="onclick string:javascript:hide_me('${repeat/record/index}')">Close</a>
+								</p>
+							</div>
+							<!-- <div class="clearer"></div>
+							<div class="PyDigirLabel" i18n:translate="">Collection number</div>
+							<div class="PyDigirValue" tal:content="record/CollectionCode"/>
+
+							<div class="PyDigirLabel" i18n:translate="">Country</div>
+							<div class="PyDigirValue" tal:content="record/Country"/> -->
 						</td>
 					</tr>
 				</tal:block>
 			</table>
+<br/>
+			<tal:block tal:define="count pages/paginator/count" condition="python:count > 15">
+			<div class="pagination" tal:define="current_page python:int(request.get('page', '1'))">
+
+				<tal:block condition="pages/leading_range">
+				<span tal:repeat="page pages/leading_range">
+				<tal:block define="this_page python:page == current_page">
+					<a class="PyDigirThisPage" tal:condition="this_page" tal:content="page"/>
+					<a tal:condition="not:this_page" tal:content="page"
+					tal:attributes="href string:${here/absolute_url}/search?page=${page}"/>
+				</tal:block>
+				</span>
+				...
+				</tal:block>
+
+				<span tal:repeat="page pages/main_range">
+				<tal:block define="this_page python:page == current_page">
+					<a class="PyDigirThisPage" tal:condition="this_page" tal:content="page"/>
+					<a tal:condition="not:this_page"
+					tal:content="page" tal:attributes="href string:${here/absolute_url}/search?page=${page}"/>
+				</tal:block>
+				</span>
+
+				<tal:block condition="pages/trailing_range">
+				...
+				<span tal:repeat="page pages/trailing_range">
+				<tal:block define="this_page python:page == current_page">
+					<a class="PyDigirThisPage" tal:condition="this_page" tal:content="page"/>
+					<a tal:condition="not:this_page"
+					tal:content="page" tal:attributes="href string:${here/absolute_url}/search?page=${page}"/>
+				</tal:block>
+				</span>
+				</tal:block>
+
+				<span tal:define="has_previous pages/has_previous;
+									has_next pages/has_next;">
+					<a class="prevpage" tal:condition="has_previous"
+						tal:attributes="href string:${here/absolute_url}/search?page=${pages/previous_page_number}">&lt; previous</a>
+					<tal:block condition="python:(has_previous and has_next)">|</tal:block>
+					<a class="nextpage" tal:condition="has_next"
+						tal:attributes="href string:${here/absolute_url}/search?page=${pages/next_page_number}">next &gt;</a>
+				</span>
+
+				<span class="matchescount">
+					<span tal:replace="pages/start_index"/>-<span tal:replace="pages/end_index"/> of <span tal:replace="pages/paginator/count"/> records
+				</span>
+			</div>
+			</tal:block>
+
 		</div>
 	</metal:block>
 
