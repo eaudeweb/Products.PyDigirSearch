@@ -10,7 +10,7 @@
 	</metal:block>
 
 	<metal:block fill-slot="body">
-		<tal:block condition="request/reset_search|nothing" content="here/delSessionInfo"/>
+		<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
 		<div id="center_content" tal:define="collections python:['Svampefund2006','Ravn&Riis-Nielsen2006', 'SineColl', 'Svendsen', 'WOLSC']">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>

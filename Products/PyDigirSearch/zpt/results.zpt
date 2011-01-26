@@ -255,9 +255,9 @@
 			</tal:block>
 
 		<p>
-			<a tal:attributes="href string:${here/absolute_url}/search?reset_search=True" i18n:translate="">New search</a>
+			<a tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="">New search</a>
 			|
-			<a tal:attributes="href string:${here/absolute_url}/search" i18n:translate="">Modify search</a></p>
+			<a tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a></p>
 
 		</div>
 	</metal:block>
