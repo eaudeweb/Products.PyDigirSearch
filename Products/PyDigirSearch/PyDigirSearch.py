@@ -40,10 +40,11 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'index_html')
     index_html = PageTemplateFile('zpt/index', globals())
     security.declareProtected(view, 'results_html')
-    index_html = PageTemplateFile('zpt/results', globals())
+    results_html = PageTemplateFile('zpt/results', globals())
 
     security.declareProtected(view, 'index_html')
     def search(self, REQUEST):
+        """ """
         objects = []
         return self.results_html(REQUEST, objects=objects)
 

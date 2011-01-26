@@ -10,11 +10,45 @@
 	</metal:block>
 
 	<metal:block fill-slot="body">
-		<div id="center_content">
+		<div id="center_content" tal:define="collections python:['CollectionX']">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
 			<form title="search_form" action="search">
-				<label for=""></label>
+				<div class="field">
+					<label for="collection" i18n:translate="">Collection</label>
+					<select id="collection" name="collection:utf8:ustring">
+						<tal:block repeat="collection collections">
+							<option tal:attributes="value collection" tal:content="collection"/>
+						</tal:block>
+					</select>
+				</div>
+				<div class="field">
+					<label for="family" i18n:translate="">Family</label>
+					<input type="text" name="family:utf8:ustring"/>
+				</div>
+				<div class="field">
+					<label for="genus" i18n:translate="">Genus</label>
+					<input type="text" name="genus:utf8:ustring"/>
+				</div>
+				<div class="field">
+					<label for="species" i18n:translate="">Species</label>
+					<input type="text" name="species:utf8:ustring"/>
+				</div>
+				<div class="field">
+					<label for="scientificnameauthor" i18n:translate="">Scientific Name Author</label>
+					<input type="text" name="scientific_name_author:utf8:ustring"/>
+				</div>
+				<div class="field">
+					<label for="country" i18n:translate="">Country</label>
+					<input type="text" name="country:utf8:ustring"/>
+				</div>
+				<div class="field">
+					<label for="locality" i18n:translate="">Locality</label>
+					<input type="text" name="locality:utf8:ustring"/>
+				</div>
+				<div class="field">
+					<input type="submit" name="search" value="Search" i18n:attributes="value"/>
+				</div>
 			</form>
 		</div>
 	</metal:block>

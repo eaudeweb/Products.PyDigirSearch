@@ -11,9 +11,29 @@
 	</metal:block>
 
 	<metal:block fill-slot="body">
-		<div id="center_content">
-			<h1 i18n:translate="">Search</h1>
-			<p i18n:translate="">Please enter your search criteria.</p>
+		<div id="center_content" tal:define="objects options/objects">
+			<h1 i18n:translate="">Search results</h1>
+			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
+			<table class="datatable" tal:condition="options">
+				<tr>
+					<th i18n:translate="">Collection</th>
+					<th i18n:translate="">Family</th>
+					<th i18n:translate="">Genus</th>
+					<th i18n:translate="">Species</th>
+					<th i18n:translate="">Scientific Name Author</th>
+					<th i18n:translate="">Country</th>
+					<th i18n:translate="">Locality</th>
+				</tr>
+				<tal:block repeat="object objects">
+					<td tal:content="object/collection"/>
+					<td tal:content="object/family"/>
+					<td tal:content="object/genus"/>
+					<td tal:content="object/species"/>
+					<td tal:content="object/scientific_name_author"/>
+					<td tal:content="object/country"/>
+					<td tal:content="object/locality"/>
+				</tal:block>
+			</table>
 		</div>
 	</metal:block>
 
