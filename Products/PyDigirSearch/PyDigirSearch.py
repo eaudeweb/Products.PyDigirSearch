@@ -119,9 +119,17 @@ class PyDigirSearch(SimpleItem):
     def make_request(self, params):
         """ """
         xml = self.build_xml(params)
-        params = urllib.urlencode({'doc': xml})
+
+        sort_pieces = params.SESSION.get('skey').split('_')
+        if len(sort_pieces) > 1:
+            sort_order = 'DESC'
+        else:
+            sort_order = 'ASC'
+        sort_on = 'darwin.darwin_%s' % sort_pieces[0].lower()
+
+        params = urllib.urlencode({'doc': xml, 'sort_on':sort_on, 'sort_order':sort_order})
         opener = urllib.FancyURLopener({})
-        f = opener.open('http://10.0.0.23:8085/DigirProvider/', params)
+        f = opener.open('http://localhost:8080/DigirProvider/', params)
         response = f.read()
         f.close()
         return response
@@ -148,9 +156,9 @@ class PyDigirSearch(SimpleItem):
         sendTime = etree.SubElement(header, "sendTime")
         sendTime.text = '2003-06-05T11:57:00-03:00'
         source = etree.SubElement(header, "source")
-        source.text = 'http://10.0.0.23:8085'
+        source.text = 'http://localhost:8080'
         destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
-        destination.text = 'http://10.0.0.23:8085/DigirProvider/'
+        destination.text = 'http://localhost:8080/DigirProvider/'
         type = etree.SubElement(header, "type",)
         type.text = 'search'
 
@@ -174,7 +182,7 @@ class PyDigirSearch(SimpleItem):
         except ValueError:
             page = 1
 
-        start = str(page*items_per_page)
+        start = str((page-1)*items_per_page)
         records = etree.SubElement(search, "records", limit=str(items_per_page), start=start)
         structure = etree.SubElement(records, "structure", schemaLocation="http://digir.sourceforge.net/schema/conceptual/darwin/full/2003/1.0/darwin2full.xsd")
         count = etree.SubElement(search, "count")
