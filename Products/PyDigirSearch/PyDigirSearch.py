@@ -2,6 +2,7 @@ import re
 import os
 from os.path import join, dirname, splitext
 import urllib
+from xml.sax.saxutils import escape
 
 from lxml import etree, objectify
 
@@ -27,6 +28,17 @@ from Products.NaayaCore.LayoutTool.DiskFile import allow_path
 allow_path('Products.PyDigirSearch:www/css/')
 
 items_per_page = 10
+
+QUERY_TERMS = {
+    'CollectionCode': 'equals',
+    'Family': 'like',
+    'Genus': 'like',
+    'Species': 'like',
+    'ScientificNameAuthor': 'like',
+    'Country': 'equals',
+    'Locality': 'like',
+    }
+
 
 class PyDigirSearch(SimpleItem):
     """
@@ -126,7 +138,8 @@ class PyDigirSearch(SimpleItem):
 
     security.declarePrivate('get_response')
     def parse_response(self, response):
-        """ """
+        """ parse DiGIR response """
+        print response
         results = etree.fromstring(response)
         ns = {
             'xmlns': 'http://digir.net/schema/protocol/2003/1.0',
@@ -149,7 +162,7 @@ class PyDigirSearch(SimpleItem):
 
     security.declarePrivate('make_request')
     def make_request(self, params):
-        """ """
+        """ make a request to DiGIR provider """
         xml = self.build_xml(params)
 
         sort_pieces = params.get('skey', 'CollectionCode').split('_')
@@ -159,6 +172,7 @@ class PyDigirSearch(SimpleItem):
             sort_order = 'ASC'
         sort_on = 'darwin.darwin_%s' % sort_pieces[0].lower()
 
+        print xml
         params = urllib.urlencode({'doc': xml, 'sort_on':sort_on, 'sort_order':sort_order})
         opener = urllib.FancyURLopener({})
         f = opener.open(self.access_point, params)
@@ -168,7 +182,7 @@ class PyDigirSearch(SimpleItem):
 
     security.declarePrivate('build_xml')
     def build_xml(self, params):
-        """ """
+        """ build the request xml """
         xmlns = "http://digir.net/schema/protocol/2003/1.0"
         xsd = "http://www.w3.org/2001/XMLSchema"
         darwin = "http://digir.net/schema/conceptual/darwin/2003/1.0"
@@ -181,7 +195,7 @@ class PyDigirSearch(SimpleItem):
         root = etree.Element("{"+xmlns+"}request", attrib={"{" + xsi + "}schemaLocation" : schemaLocation}, 
                                 nsmap={'xsi':xsi, None:xmlns, 'xsd':xsd, 'darwin':darwin})
 
-        #buid header
+        #build header
         header = etree.SubElement(root, "header")
         version = etree.SubElement(header, "version")
         version.text = '1.0.0'
@@ -192,21 +206,15 @@ class PyDigirSearch(SimpleItem):
         destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
         destination.text = self.access_point
         type = etree.SubElement(header, "type",)
-        type.text = 'search'
+        type.text = "search"
 
         #build search
         search = etree.SubElement(root, "search")
         filter = etree.SubElement(search, "filter")
 
         #build filters
-        and_operator = etree.SubElement(filter, "and")
-        equals = etree.SubElement(and_operator, "equals")
-        collectioncode = etree.SubElement(equals, "{http://digir.net/schema/conceptual/darwin/2003/1.0}CollectionCode")
-        collectioncode.text = params.SESSION.get('CollectionCode', '')
-
-        like = etree.SubElement(and_operator, "like")
-        family = etree.SubElement(like, "{http://digir.net/schema/conceptual/darwin/2003/1.0}Family")
-        family.text = params.SESSION.get('Family', '')
+        filters_container = self.build_filters(params)
+        filter.append(filters_container.getchildren()[0])
 
         #build records
         try:
@@ -220,5 +228,34 @@ class PyDigirSearch(SimpleItem):
         count = etree.SubElement(search, "count")
         count.text = "true"
         return (etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True))
+
+    security.declarePrivate('join_filters')
+    def join_filters(self, node1, node2, params):
+        if node1 in QUERY_TERMS.keys():
+            node1_value = "<darwin:%s>%s</darwin:%s>" % (node1, escape(params.SESSION.get(node1)), node1)
+            node1_condition = "<%s>%s</%s>" % (QUERY_TERMS[node1], node1_value, QUERY_TERMS[node1])
+        else:
+            node1_condition = node1
+        node2_value = "<darwin:%s>%s</darwin:%s>" % (node2, escape(params.SESSION.get(node2)), node2)
+        node2_condition = "<%s>%s</%s>" % (QUERY_TERMS[node2], node2_value, QUERY_TERMS[node2])
+        return "<and>%s%s</and>" % (node1_condition, node2_condition)
+
+    security.declarePrivate('build_filters')
+    def build_filters(self, params):
+        qnames = [ k for k,v in params.SESSION.items() if v ]
+        if qnames:
+            partial = qnames[0]
+            if len(qnames) > 2:
+                for name in qnames[1:]:
+                    partial = self.join_filters(partial, name, params)
+            else:
+                partial_value = "<darwin:%s>%s</darwin:%s>" % (partial, escape(params.SESSION.get(partial)), partial)
+                partial = "<%s>%s</%s>" % (QUERY_TERMS[partial], partial_value, QUERY_TERMS[partial])
+        else:
+            partial = "<like><darwin:CollectionCode></darwin:CollectionCode></like>"    #DiGIR request at least one condition
+        # namespace prefix darwin must be defined otherwise lxml will failed to parse this xml
+        # we define the darwin namespace on a dummy container
+        xml = "<request xmlns='http://digir.net/schema/protocol/2003/1.0' xmlns:darwin='http://digir.net/schema/conceptual/darwin/2003/1.0'>" + partial + "</request>"
+        return etree.fromstring(xml)
 
 InitializeClass(PyDigirSearch)
