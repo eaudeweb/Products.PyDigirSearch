@@ -7,9 +7,23 @@
 	width:50%;
 	float:left;
 }
-.PyDigirMap{
+.PyDigirMapContainer{
 	float:left;
-	width:50%;
+	width: 50%;
+	margin-top:3px;
+}
+.PyDigirMap{
+	width: 370px;
+	height: 300px;
+	margin: auto;
+}
+.PyDigirClose{
+	width: 100%;
+}
+.PyDigirClose p{
+	text-align: right;
+	position: relative;
+	right: 5px
 }
 .PyDigirThisPage{
 	font-weight:bold;

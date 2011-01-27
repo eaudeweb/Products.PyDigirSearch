@@ -13,17 +13,26 @@
 				$('tr[id^="collection"] td').removeClass('PyDigirThisIndex');
 				$('#row_'+record_id+' td').addClass('PyDigirThisRecord');
 				$('#collection_'+record_id+' td').addClass('PyDigirThisIndex');
+				if ($('#lat_'+record_id).text().length>0 && $('#lon_'+record_id).text().length>0)
+				{
+					naaya_map_engine.map_with_points('minimap_'+record_id, [{'lat': $('#lat_'+record_id).text(), 'lon': $('#lon_'+record_id).text()}]);
+				}
+				//$('#row_'+record_id+' td a').attr('onclick', "javascript:hide_me('"+record_id+"')");
 			}
+
 			function hide_me(record_id){
 				$('#collection_'+record_id).hide();
 				$('#row_'+record_id+' td').removeClass('PyDigirThisRecord');
 				$('#collection_'+record_id+' td').removeClass('PyDigirThisIndex');
+				//$('#row_'+record_id+' td a').attr('onclick', "javascript:show_me('"+record_id+"')");
 			}
 		</script>
 		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
 	</metal:block>
 
 	<metal:block fill-slot="body">
+		<tal:block define="portal_map here/getGeoMapTool"
+			content="structure python:portal_map.setup_map_engine_html(request)"/>
 		<div id="center_content"
 			tal:define="records options/records;
 					pages options/pages;
@@ -32,7 +41,7 @@
 					">
 			<h1 i18n:translate="">Search results</h1>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
-			<table style="width:100%" class="datatable" tal:condition="options">
+			<table style="width:770px;" class="datatable" tal:condition="options">
 				<tr>
 					<th>
 						<tal:block condition="python:skey=='CollectionCode'">
@@ -120,7 +129,7 @@
 					</th>
 				</tr>
 				<tal:block repeat="record records">
-					<tr tal:attributes="id string:row_${repeat/record/index}">
+					<tr tal:attributes="id string:row_${repeat/record/index}" class="DigirParent">
 						<td>
 							<a tal:content="record/CollectionCode" href="#"
 							tal:attributes="onclick string:javascript:show_me('${repeat/record/index}')"/></td>
@@ -157,11 +166,11 @@
 								</tr>
 								<tr>
 									<th i18n:translate="">Latitude</th>
-									<td tal:content="record/Latitude"/>
+									<td tal:attributes="id string:lat_${repeat/record/index}" tal:content="record/Latitude"/>
 								</tr>
 								<tr>
 									<th i18n:translate="">Longitude</th>
-									<td tal:content="record/Longitude"/>
+									<td tal:attributes="id string:lon_${repeat/record/index}" tal:content="record/Longitude"/>
 								</tr>
 								<tr>
 									<th i18n:translate="">MinimumElevation</th>
@@ -197,12 +206,16 @@
 								</tr>
 							</table>
 							</div>
-							<div class="PyDigirMap">
-								<img tal:attributes="src string:${here/absolute_url}/Harta.jpg" alt=""/>
-								<p style="text-align:center">
-									<a href="#" i18n:translate=""
-									tal:attributes="onclick string:javascript:hide_me('${repeat/record/index}')">Close</a>
-								</p>
+							<div class="PyDigirMapContainer">
+								<div class="PyDigirMap" tal:attributes="id string:minimap_${repeat/record/index}">
+								<p i18n:translate="">No coordinates</p>
+							</div>
+								<div class="PyDigirClose">
+									<p>
+										<a href="#" i18n:translate=""
+										tal:attributes="onclick string:javascript:hide_me('${repeat/record/index}')">Close</a>
+									</p>
+								</div>
 							</div>
 						</td>
 					</tr>
