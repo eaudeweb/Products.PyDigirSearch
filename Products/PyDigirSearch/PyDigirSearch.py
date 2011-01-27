@@ -139,7 +139,6 @@ class PyDigirSearch(SimpleItem):
     security.declarePrivate('get_response')
     def parse_response(self, response):
         """ parse DiGIR response """
-        print response
         results = etree.fromstring(response)
         ns = {
             'xmlns': 'http://digir.net/schema/protocol/2003/1.0',
@@ -172,7 +171,6 @@ class PyDigirSearch(SimpleItem):
             sort_order = 'ASC'
         sort_on = 'darwin.darwin_%s' % sort_pieces[0].lower()
 
-        print xml
         params = urllib.urlencode({'doc': xml, 'sort_on':sort_on, 'sort_order':sort_order})
         opener = urllib.FancyURLopener({})
         f = opener.open(self.access_point, params)
