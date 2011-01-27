@@ -120,7 +120,7 @@ class PyDigirSearch(SimpleItem):
 
     def itemsPaginator(self, records, REQUEST):
         """ """
-        paginator = DiggPaginator(records, items_per_page, body=5, padding=2, orphans=5)   #Show 10 documents per page
+        paginator = DiggPaginator(records, items_per_page, body=5, padding=2, orphans=0)   #Show 10 documents per page
 
         # Make sure page request is an int. If not, deliver first page.
         try:
