@@ -243,7 +243,7 @@ class PyDigirSearch(SimpleItem):
         qnames = [ k for k,v in params.SESSION.items() if v ]
         if qnames:
             partial = qnames[0]
-            if len(qnames) > 2:
+            if len(qnames) > 1:
                 for name in qnames[1:]:
                     partial = self.join_filters(partial, name, params)
             else:
