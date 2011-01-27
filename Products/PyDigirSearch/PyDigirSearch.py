@@ -35,16 +35,48 @@ class PyDigirSearch(SimpleItem):
     meta_type = 'Search DiGIR Provider'
     security = ClassSecurityInfo()
 
+    manage_options = (
+        SimpleItem.manage_options
+        +
+        (
+            {'label' : 'Properties', 'action' :'manage_edit_html'},
+        )
+    )
+
     def __init__(self, id):
         """
             Constructor that builds new PyDigirSearch object.
         """
         self.id = id
+        self.access_point = 'http://localhost:8080/DigirProvider'
+        self.host_name = 'http://localhost:8080'
 
     security.declareProtected(view, 'index_html')
     index_html = PageTemplateFile('zpt/index', globals())
     security.declareProtected(view, 'results_html')
     results_html = PageTemplateFile('zpt/results', globals())
+
+    security.declareProtected(view_management_screens, 'manage_edit_html')
+    manage_edit_html = PageTemplateFile('zpt/PyDigirSearch_manage_edit', globals())
+
+    security.declareProtected(view_management_screens, 'manageProperties')
+    def manageProperties(self, REQUEST=None, **kwargs):
+        """ """
+        if not self.checkPermissionEditObject():
+            raise EXCEPTION_NOTAUTHORIZED, EXCEPTION_NOTAUTHORIZED_MSG
+
+        if REQUEST is not None:
+            params = dict(REQUEST.form)
+        else:
+            params = kwargs
+        access_point = params.pop('access_point')
+        self.access_point = access_point
+        host_name = params.pop('host_name')
+        self.host_name = host_name
+
+        self._p_changed = 1
+        self.recatalogNyObject(self)
+        if REQUEST: REQUEST.RESPONSE.redirect('manage_edit_html?save=ok')
 
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
@@ -129,7 +161,7 @@ class PyDigirSearch(SimpleItem):
 
         params = urllib.urlencode({'doc': xml, 'sort_on':sort_on, 'sort_order':sort_order})
         opener = urllib.FancyURLopener({})
-        f = opener.open('http://localhost:8085/DigirProvider/', params)
+        f = opener.open(self.access_point, params)
         response = f.read()
         f.close()
         return response
@@ -156,9 +188,9 @@ class PyDigirSearch(SimpleItem):
         sendTime = etree.SubElement(header, "sendTime")
         sendTime.text = '2003-06-05T11:57:00-03:00'
         source = etree.SubElement(header, "source")
-        source.text = 'http://localhost:8085'
+        source.text = self.host_name
         destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
-        destination.text = 'http://localhost:8085/DigirProvider/'
+        destination.text = self.access_point
         type = etree.SubElement(header, "type",)
         type.text = 'search'
 

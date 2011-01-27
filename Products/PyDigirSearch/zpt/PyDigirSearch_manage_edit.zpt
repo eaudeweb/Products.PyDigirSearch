@@ -1,0 +1,16 @@
+<span tal:replace="structure here/manage_page_header" />
+<span tal:replace="structure here/manage_tabs" />
+<p>
+	Change the properties in the form below and click <strong>Save changes</strong>.
+</p>
+
+<form action="manageProperties" method="post">
+	<div class="form-label">Access point</div>
+	<input type="text" name="access_point" size="100" tal:attributes="value here/access_point|nothing" />
+	<div class="form-label">Host name</div>
+	<input type="text" name="host_name" size="100" tal:attributes="value here/host_name|nothing" />
+	<br/>
+	<br/>
+	<div><input type="submit" value="Save properties" /></div>
+</form>
+<span tal:replace="structure here/manage_page_footer" />
