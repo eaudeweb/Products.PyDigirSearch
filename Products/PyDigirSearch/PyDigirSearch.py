@@ -63,10 +63,10 @@ class PyDigirSearch(SimpleItem):
             REQUEST.get('Country', REQUEST.SESSION.get('Country')))
         self.setSession('Locality',
             REQUEST.get('Locality', REQUEST.SESSION.get('Locality')))
-        self.setSession('skey',
-            REQUEST.get('skey', REQUEST.SESSION.get('skey', 'CollectionCode')))
-        self.setSession('page',
-            REQUEST.get('page', REQUEST.SESSION.get('page', '1')))
+        #self.setSession('skey',
+        #    REQUEST.get('skey', REQUEST.SESSION.get('skey', 'CollectionCode')))
+        #self.setSession('page',
+        #    REQUEST.get('page', REQUEST.SESSION.get('page', '1')))
         response = self.make_request(REQUEST)
         records, match_count, record_count, end_of_records = self.parse_response(response)
         all_records = [number for number in range(int(match_count))]
@@ -120,7 +120,7 @@ class PyDigirSearch(SimpleItem):
         """ """
         xml = self.build_xml(params)
 
-        sort_pieces = params.SESSION.get('skey').split('_')
+        sort_pieces = params.get('skey', 'CollectionCode').split('_')
         if len(sort_pieces) > 1:
             sort_order = 'DESC'
         else:
@@ -129,7 +129,7 @@ class PyDigirSearch(SimpleItem):
 
         params = urllib.urlencode({'doc': xml, 'sort_on':sort_on, 'sort_order':sort_order})
         opener = urllib.FancyURLopener({})
-        f = opener.open('http://localhost:8080/DigirProvider/', params)
+        f = opener.open('http://localhost:8085/DigirProvider/', params)
         response = f.read()
         f.close()
         return response
@@ -156,9 +156,9 @@ class PyDigirSearch(SimpleItem):
         sendTime = etree.SubElement(header, "sendTime")
         sendTime.text = '2003-06-05T11:57:00-03:00'
         source = etree.SubElement(header, "source")
-        source.text = 'http://localhost:8080'
+        source.text = 'http://localhost:8085'
         destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
-        destination.text = 'http://localhost:8080/DigirProvider/'
+        destination.text = 'http://localhost:8085/DigirProvider/'
         type = etree.SubElement(header, "type",)
         type.text = 'search'
 
@@ -178,7 +178,7 @@ class PyDigirSearch(SimpleItem):
 
         #build records
         try:
-            page = int(params.SESSION.get('page', '1'))
+            page = int(params.get('page', '1'))
         except ValueError:
             page = 1
 

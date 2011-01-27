@@ -28,11 +28,11 @@
 			tal:define="records options/records;
 					pages options/pages;
 					skey request/skey|string:CollectionCode;
-					page python:request.get('page', '');
+					page python:request.get('page', '1');
 					">
 			<h1 i18n:translate="">Search results</h1>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
-			<table class="datatable" tal:condition="options">
+			<table style="width:100%" class="datatable" tal:condition="options">
 				<tr>
 					<th>
 						<tal:block condition="python:skey=='CollectionCode'">
@@ -217,7 +217,7 @@
 				<tal:block define="this_page python:page == current_page">
 					<a class="PyDigirThisPage" tal:condition="this_page" tal:content="page"/>
 					<a tal:condition="not:this_page" tal:content="page"
-					tal:attributes="href string:${here/absolute_url}/search?page=${page}"/>
+					tal:attributes="href string:${here/absolute_url}/search?page=${page}&skey=${skey}"/>
 				</tal:block>
 				</span>
 				...
@@ -227,7 +227,7 @@
 				<tal:block define="this_page python:page == current_page">
 					<a class="PyDigirThisPage" tal:condition="this_page" tal:content="page"/>
 					<a tal:condition="not:this_page"
-					tal:content="page" tal:attributes="href string:${here/absolute_url}/search?page=${page}"/>
+					tal:content="page" tal:attributes="href string:${here/absolute_url}/search?page=${page}&skey=${skey}"/>
 				</tal:block>
 				</span>
 
@@ -237,7 +237,7 @@
 				<tal:block define="this_page python:page == current_page">
 					<a class="PyDigirThisPage" tal:condition="this_page" tal:content="page"/>
 					<a tal:condition="not:this_page"
-					tal:content="page" tal:attributes="href string:${here/absolute_url}/search?page=${page}"/>
+					tal:content="page" tal:attributes="href string:${here/absolute_url}/search?page=${page}&skey=${skey}"/>
 				</tal:block>
 				</span>
 				</tal:block>
@@ -248,7 +248,7 @@
 						tal:attributes="href string:${here/absolute_url}/search?page=${pages/previous_page_number}">&lt; previous</a>
 					<tal:block condition="python:(has_previous and has_next)">|</tal:block>
 					<a class="nextpage" tal:condition="has_next"
-						tal:attributes="href string:${here/absolute_url}/search?page=${pages/next_page_number}">next &gt;</a>
+						tal:attributes="href string:${here/absolute_url}/search?page=${pages/next_page_number}&skey=${skey}">next &gt;</a>
 				</span>
 
 				<span class="matchescount">
