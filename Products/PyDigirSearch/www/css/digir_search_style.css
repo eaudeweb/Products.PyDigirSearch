@@ -3,19 +3,24 @@
 }
 .PyDigirValue{
 }
-.PyDigir_collection_details{
-	width:50%;
+.PyDigir_collection_details {
+	padding: 20px !important;
+	width: 45%;
 	float:left;
+}
+.PyDigir_collection_details .datatable {
+	border: 1px solid #969696;
 }
 .PyDigirMapContainer{
 	float:left;
-	width: 50%;
+	width: 47%;
 	margin-top:3px;
 }
-.PyDigirMap{
-	width: 370px;
+.PyDigirMap {
 	height: 300px;
-	margin: auto;
+	margin: 17px auto auto;
+	padding: 20px;
+	width: 317px;
 }
 .PyDigirClose{
 	width: 100%;
@@ -32,12 +37,65 @@
 }
 .PyDigirThisRecord{
 	font-weight:bold;
-	background-color:#CFE0B4;
 	border:1px solid #969696;
 }
+.PyDigirThisRecord:first-child {
+	border-left: 1px solid #969696 !important;
+}
+
+.PyDigirThisRecord:last-child {
+	border-right: 1px solid #969696 !important;
+}
+
 .PyDigirThisIndex{
 	border:1px solid #969696;
+	background-color: #FFFFFF !important;
+}
+.PyDigirThisIndex .PyDigir_collection_details .datatable th, .PyDigirThisRecord {
+	background-color: #F5F9ED !important;
 }
 .pagination{
 	text-align:center;
+}
+
+.search-results-table, .PyDigir_collection_details .datatable {
+	border-collapse: collapse;
+}
+
+.search-results-table th {
+	font-size: 12px;
+}
+
+.search-results-table tr.DigirParent {
+	border: 1px solid #DFDFDF;
+}
+
+.search-results-table tr td {
+	padding: 5px;
+}
+
+.search-results-table tr.DigirParent:hover {
+	background-color: #F5F9ED;
+}
+
+img.arrow {
+	background: url('../../images/arrows.gif') no-repeat scroll 0 0;
+	width: 16px;
+	height: 18px;
+}
+
+img.arrow.arrow-normal:hover {
+	background-position: -32px 0;
+}
+
+img.arrow.arrow-down {
+	background-position: -16px 0;
+}
+
+img.arrow.arrow-down:hover {
+	background-position: -48px 0;
+}
+
+.datatable tr.row-even td:last-child, .datatable tr.row-odd td:last-child {
+	border-right: 1px solid #969696 !important;
 }

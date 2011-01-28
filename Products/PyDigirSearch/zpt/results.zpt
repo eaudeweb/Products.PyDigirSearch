@@ -17,14 +17,15 @@
 				{
 					naaya_map_engine.map_with_points('minimap_'+record_id, [{'lat': $('#lat_'+record_id).text(), 'lon': $('#lon_'+record_id).text()}]);
 				}
-				//$('#row_'+record_id+' td a').attr('onclick', "javascript:hide_me('"+record_id+"')");
+				$('#img_' + record_id).addClass('arrow-down');
 			}
 
 			function hide_me(record_id){
 				$('#collection_'+record_id).hide();
 				$('#row_'+record_id+' td').removeClass('PyDigirThisRecord');
 				$('#collection_'+record_id+' td').removeClass('PyDigirThisIndex');
-				//$('#row_'+record_id+' td a').attr('onclick', "javascript:show_me('"+record_id+"')");
+				$('#img_' + record_id).removeClass('arrow-down');
+				$('#img_' + record_id).addClass('arrow-normal');
 			}
 		</script>
 		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
@@ -46,7 +47,7 @@
 				<a tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a>
 			</p>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
-			<table style="width:770px;" class="datatable" tal:condition="options">
+			<table style="width:770px;" class="datatable search-results-table" tal:condition="options">
 				<tr>
 					<th>
 						<tal:block condition="python:skey=='CollectionCode'">
@@ -134,9 +135,14 @@
 					</th>
 				</tr>
 				<tal:block repeat="record records">
-					<tr tal:attributes="id string:row_${repeat/record/index}" class="DigirParent">
+					<tr tal:attributes="id string:row_${repeat/record/index};
+						class python:test(path('repeat/record/odd'), 'DigirParent row-even', 'DigirParent row-odd')">
 						<td>
-							<a tal:content="record/CollectionCode" href="#"
+							<img src="../../images/s.gif" alt="" title="" class="arrow arrow-normal" tal:attributes="
+							onclick string:javascript:show_me('${repeat/record/index}');
+							id string:img_${repeat/record/index}"
+							 />
+							<a tal:content="record/CollectionCode" href="javascript:void(0);"
 							tal:attributes="onclick string:javascript:show_me('${repeat/record/index}')"/></td>
 						<td tal:content="record/Family"/>
 						<td tal:content="record/Genus"/>
@@ -217,7 +223,7 @@
 							</div>
 								<div class="PyDigirClose">
 									<p>
-										<a href="#" i18n:translate=""
+										<a href="javascript:void(0);" i18n:translate=""
 										tal:attributes="onclick string:javascript:hide_me('${repeat/record/index}')">Close</a>
 									</p>
 								</div>
