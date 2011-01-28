@@ -104,3 +104,53 @@ img.arrow.arrow-down:hover {
 .datatable tr.row-even td:last-child, .datatable tr.row-odd td:last-child {
 	border-right: 1px solid #969696 !important;
 }
+.search-form {
+	border: 1px solid #DFDFDF;
+	padding: 0px 15px 15px 15px;
+	width: 380px;
+	background-color: #F5F9ED;
+}
+
+.search-form p {
+	font-weight: bold;
+}
+
+.form-left-element {
+	float: left;
+	clear: left;
+}
+
+.form-right-element {
+	float: right;
+	clear: right;
+	margin-right: 10px;
+}
+
+.search-form .field input, .search-form .field-inline input {
+	border: 1px solid #9CBAD6;
+	padding: 3px;
+}
+
+.search-form .text-input {
+	width: 150px;
+}
+
+.search-form .text-input:focus {
+	background-color: #EDF6FF;
+}
+
+.search-form .submit {
+	height: 2em;
+	padding-top: 0;
+	border: 1px solid #ccc;
+	background: #ddd;
+	cursor: pointer;
+}
+
+.search-form .submit:hover {
+	background-color: #EDEDED;
+}
+.form-left-element, .form-right-element{
+	width: 150px !important;
+}
+
