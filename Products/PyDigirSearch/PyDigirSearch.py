@@ -90,6 +90,9 @@ class PyDigirSearch(SimpleItem):
         self.recatalogNyObject(self)
         if REQUEST: REQUEST.RESPONSE.redirect('manage_edit_html?save=ok')
 
+    ##################
+    # SEARCH DiGIR   #
+    ##################
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
@@ -111,8 +114,8 @@ class PyDigirSearch(SimpleItem):
         #    REQUEST.get('skey', REQUEST.SESSION.get('skey', 'CollectionCode')))
         #self.setSession('page',
         #    REQUEST.get('page', REQUEST.SESSION.get('page', '1')))
-        response = self.make_request(REQUEST)
-        records, match_count, record_count, end_of_records = self.parse_response(response)
+        response = self.make_search_request(REQUEST)
+        records, match_count, record_count, end_of_records = self.parse_search_response(response)
         all_records = [number for number in range(int(match_count))]
         pages = self.itemsPaginator(all_records, REQUEST)
 
@@ -137,7 +140,7 @@ class PyDigirSearch(SimpleItem):
         return items
 
     security.declarePrivate('get_response')
-    def parse_response(self, response):
+    def parse_search_response(self, response):
         """ parse DiGIR response """
         results = etree.fromstring(response)
         ns = {
@@ -160,9 +163,9 @@ class PyDigirSearch(SimpleItem):
         return records, match_count, record_count, end_of_records
 
     security.declarePrivate('make_request')
-    def make_request(self, params):
+    def make_search_request(self, params):
         """ make a request to DiGIR provider """
-        xml = self.build_xml(params)
+        xml = self.build_search_xml(params)
 
         sort_pieces = params.get('skey', 'CollectionCode').split('_')
         if len(sort_pieces) > 1:
@@ -179,7 +182,7 @@ class PyDigirSearch(SimpleItem):
         return response
 
     security.declarePrivate('build_xml')
-    def build_xml(self, params):
+    def build_search_xml(self, params):
         """ build the request xml """
         xmlns = "http://digir.net/schema/protocol/2003/1.0"
         xsd = "http://www.w3.org/2001/XMLSchema"
@@ -255,5 +258,81 @@ class PyDigirSearch(SimpleItem):
         # we define the darwin namespace on a dummy container
         xml = "<request xmlns='http://digir.net/schema/protocol/2003/1.0' xmlns:darwin='http://digir.net/schema/conceptual/darwin/2003/1.0'>" + partial + "</request>"
         return etree.fromstring(xml)
+
+
+    #########################
+    # GET DiGIR INVENTORY   #
+    #########################
+
+    security.declareProtected(view, 'get_inventory')
+    def get_inventory(self):
+        """ """
+        response = self.make_inventory_request()
+        records = self.parse_inventory_response(response)
+        return records
+
+    security.declarePrivate('make_inventory_request')
+    def make_inventory_request(self):
+        """ make a request to DiGIR provider """
+        xml = self.build_inventory_xml()
+        params = urllib.urlencode({'doc': xml})
+        opener = urllib.FancyURLopener({})
+        f = opener.open(self.access_point, params)
+        response = f.read()
+        f.close()
+        return response
+
+    security.declarePrivate('build_inventory_xml')
+    def build_inventory_xml(self):
+        """ build the request inventory xml """
+        xmlns = "http://digir.net/schema/protocol/2003/1.0"
+        darwin = "http://digir.net/schema/conceptual/darwin/2003/1.0"
+        schemaLocation = "%s %s" % ('http://digir.net/schema/protocol/2003/1.0',
+                                        'http://digir.net/schema/conceptual/darwin/2003/1.0')
+
+        root = etree.Element("{"+xmlns+"}request", nsmap={None:xmlns, 'darwin':darwin})
+
+        #build header
+        header = etree.SubElement(root, "header")
+        version = etree.SubElement(header, "version")
+        version.text = '1.0.0'
+        sendTime = etree.SubElement(header, "sendTime")
+        sendTime.text = '2003-06-05T11:57:00-03:00'
+        source = etree.SubElement(header, "source")
+        source.text = self.host_name
+        destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
+        destination.text = self.access_point
+        type = etree.SubElement(header, "type",)
+        type.text = "inventory"
+
+        #build inventory
+        inventory = etree.SubElement(root, "inventory")
+        collection_code = etree.SubElement(inventory, "{http://digir.net/schema/conceptual/darwin/2003/1.0}CollectionCode")
+        count = etree.SubElement(inventory, "count")
+        count.text = "true"
+        return (etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True))
+
+    security.declarePrivate('parse_inventory_response')
+    def parse_inventory_response(self, response):
+        """ parse DiGIR inventory response """
+        results = etree.fromstring(response)
+        ns = {
+            'xmlns': 'http://digir.net/schema/protocol/2003/1.0',
+            'darwin': 'http://digir.net/schema/conceptual/darwin/2003/1.0',
+        }
+
+        records = []
+        for record in results.xpath('xmlns:content/xmlns:record', namespaces=ns):
+            record_data = {}
+            for child in record.getchildren():
+                record_data.setdefault(child.tag.replace('{%s}' % ns['darwin'], ''), child.text)
+            records.append(record_data)
+
+        # diagnostics = results.xpath('xmlns:diagnostics', namespaces=ns)[0]
+        # match_count = diagnostics.xpath('xmlns:diagnostic[@code="MATCH_COUNT"]', namespaces=ns)[0].text
+        # record_count = diagnostics.xpath('xmlns:diagnostic[@code="RECORD_COUNT"]', namespaces=ns)[0].text
+        # end_of_records = diagnostics.xpath('xmlns:diagnostic[@code="END_OF_RECORDS"]', namespaces=ns)[0].text
+
+        return records
 
 InitializeClass(PyDigirSearch)

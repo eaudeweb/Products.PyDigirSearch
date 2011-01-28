@@ -11,15 +11,16 @@
 
 	<metal:block fill-slot="body">
 		<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
-		<div id="center_content" tal:define="collections python:['Svampefund2006','Ravn&Riis-Nielsen2006', 'SineColl', 'Svendsen', 'WOLSC']">
+		<div id="center_content" tal:define="collections here/get_inventory">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
 			<form title="search_form" action="search" method="post">
 				<div class="field">
 					<label for="CollectionCode" i18n:translate="">Collection</label>
 					<select id="CollectionCode" name="CollectionCode:utf8:ustring">
+						<option value="" i18n:translate="">All</option>
 						<tal:block repeat="collection collections">
-							<option tal:attributes="value collection" tal:content="collection"/>
+							<option tal:attributes="value collection/CollectionCode" tal:content="collection/CollectionCode"/>
 						</tal:block>
 					</select>
 				</div>
