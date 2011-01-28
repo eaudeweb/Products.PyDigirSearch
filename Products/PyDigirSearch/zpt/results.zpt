@@ -6,6 +6,16 @@
 
 	<metal:block metal:fill-slot="head">
 		<script type="text/javascript">
+			function toggle(record_id){
+				if ($('#collection_'+record_id).hasClass('toggle_off'))
+				{
+					show_me(record_id);
+				}
+				else
+				{
+					hide_me(record_id);
+				}
+			}
 			function show_me(record_id){
 				$('tr[id^="collection"]').hide();
 				$('#collection_'+record_id).show();
@@ -18,6 +28,8 @@
 					naaya_map_engine.map_with_points('minimap_'+record_id, [{'lat': $('#lat_'+record_id).text(), 'lon': $('#lon_'+record_id).text()}]);
 				}
 				$('#img_' + record_id).addClass('arrow-down');
+				$('#collection_'+record_id).removeClass('toggle_off')
+				$('#collection_'+record_id).addClass('toggle_on')
 			}
 
 			function hide_me(record_id){
@@ -26,6 +38,8 @@
 				$('#collection_'+record_id+' td').removeClass('PyDigirThisIndex');
 				$('#img_' + record_id).removeClass('arrow-down');
 				$('#img_' + record_id).addClass('arrow-normal');
+				$('#collection_'+record_id).removeClass('toggle_on')
+				$('#collection_'+record_id).addClass('toggle_off')
 			}
 		</script>
 		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
@@ -139,11 +153,11 @@
 						class python:test(path('repeat/record/odd'), 'DigirParent row-even', 'DigirParent row-odd')">
 						<td>
 							<img src="misc_/PyDigirSearch/s.gif" alt="" title="" class="arrow arrow-normal" tal:attributes="
-							onclick string:javascript:show_me('${repeat/record/index}');
+							onclick string:javascript:toggle('${repeat/record/index}');
 							id string:img_${repeat/record/index}"
 							 />
 							<a tal:content="record/CollectionCode" href="javascript:void(0);"
-							tal:attributes="onclick string:javascript:show_me('${repeat/record/index}')"/></td>
+							tal:attributes="onclick string:javascript:toggle('${repeat/record/index}')"/></td>
 						<td tal:content="record/Family"/>
 						<td tal:content="record/Genus"/>
 						<td tal:content="record/Species"/>
@@ -151,7 +165,8 @@
 						<td tal:content="record/Country"/>
 						<td tal:content="record/Locality"/>
 					</tr>
-					<tr tal:attributes="id string:collection_${repeat/record/index}" style="display:none">
+					<tr tal:attributes="id string:collection_${repeat/record/index}"
+						style="display:none" class="toggle_off">
 						<td colspan="7">
 							<div class="PyDigir_collection_details">
 							<table class="datatable">
@@ -224,7 +239,7 @@
 								<div class="PyDigirClose">
 									<p>
 										<a href="javascript:void(0);" i18n:translate=""
-										tal:attributes="onclick string:javascript:hide_me('${repeat/record/index}')">Close</a>
+										tal:attributes="onclick string:javascript:toggle('${repeat/record/index}')">Close</a>
 									</p>
 								</div>
 							</div>
