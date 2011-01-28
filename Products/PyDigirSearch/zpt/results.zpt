@@ -49,7 +49,7 @@
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
 			<table style="width:770px;" class="datatable search-results-table" tal:condition="options">
 				<tr>
-					<th>
+					<th style="width:10em;">
 						<tal:block condition="python:skey=='CollectionCode'">
 							<a i18n:translate=""
 								tal:attributes="href string:${here/absolute_url}/search?skey=CollectionCode_r">Collection</a>
