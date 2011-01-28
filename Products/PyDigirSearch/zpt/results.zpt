@@ -17,23 +17,33 @@
 				}
 			}
 			function show_me(record_id){
+				//Reset other rows (reset arrow, hide rows)
+				$('tr[id^="collection"]').removeClass('toggle_on');
+				$('tr[id^="collection"]').addClass('toggle_off');
+				$('img[id^="img_"]').removeClass('arrow-down');
+				$('img[id^="img_"]').addClass('arrow-normal');
 				$('tr[id^="collection"]').hide();
+				//Show requested row
 				$('#collection_'+record_id).show();
 				$('tr[id^="row"] td').removeClass('PyDigirThisRecord');
 				$('tr[id^="collection"] td').removeClass('PyDigirThisIndex');
 				$('#row_'+record_id+' td').addClass('PyDigirThisRecord');
 				$('#collection_'+record_id+' td').addClass('PyDigirThisIndex');
+				//Show position on map if we have both lat and lon
 				if ($('#lat_'+record_id).text().length>0 && $('#lon_'+record_id).text().length>0)
 				{
 					naaya_map_engine.map_with_points('minimap_'+record_id, [{'lat': $('#lat_'+record_id).text(), 'lon': $('#lon_'+record_id).text()}]);
 				}
+				//Update classes to reflect toggle condition
 				$('#img_' + record_id).addClass('arrow-down');
 				$('#collection_'+record_id).removeClass('toggle_off')
 				$('#collection_'+record_id).addClass('toggle_on')
 			}
 
 			function hide_me(record_id){
+				//Hide requested row
 				$('#collection_'+record_id).hide();
+				//Update classes to reflect toggle condition
 				$('#row_'+record_id+' td').removeClass('PyDigirThisRecord');
 				$('#collection_'+record_id+' td').removeClass('PyDigirThisIndex');
 				$('#img_' + record_id).removeClass('arrow-down');
