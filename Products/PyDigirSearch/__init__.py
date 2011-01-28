@@ -15,4 +15,6 @@ def initialize(context):
 
 misc_ = {
     'digir_search_style.css':ImageFile('www/css/digir_search_style.css', globals()),
+    'arrows.gif':ImageFile('www/arrows.gif', globals()),
+    's.gif':ImageFile('www/s.gif', globals()),
 }
