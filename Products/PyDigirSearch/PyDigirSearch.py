@@ -130,30 +130,45 @@ class PyDigirSearch(SimpleItem):
 
         return items
 
-    # security.declareProtected(view, 'get_institutions')
-    # def get_institutions(self, dbconn):
-    #     """ """
-    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_institutioncode AS InstitutionCode from darwin ORDER BY InstitutionCode')
-    # 
-    # security.declareProtected(view, 'get_collections')
-    # def get_collections(self, dbconn):
-    #     """ """
-    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode from darwin ORDER BY CollectionCode')
+    security.declareProtected(view, 'get_institutions')
+    def get_institutions(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_institutioncode AS InstitutionCode 
+                                FROM darwin 
+                                WHERE darwin.darwin_institutioncode LIKE "%s%%" 
+                                ORDER BY InstitutionCode LIMIT 100""" % query)
+
+    security.declareProtected(view, 'get_collections')
+    def get_collections(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode 
+                                FROM darwin 
+                                WHERE darwin.darwin_collectioncode LIKE "%s%%" 
+                                ORDER BY CollectionCode LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_families')
     def get_families(self, query, dbconn):
         """ """
-        return dbconn.query(u'SELECT DISTINCT darwin.darwin_family AS Family from darwin WHERE darwin.darwin_family LIKE "%s%%" ORDER BY Family LIMIT 100' % query)
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_family AS Family 
+                                FROM darwin 
+                                WHERE darwin.darwin_family LIKE "%s%%" 
+                                ORDER BY Family LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_genres')
     def get_genres(self, family, dbconn):
         """ """
-        return dbconn.query(u'SELECT DISTINCT darwin.darwin_genus AS Genus FROM darwin WHERE darwin.darwin_family = "%s" ORDER BY Genus' % family)
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus 
+                                FROM darwin 
+                                WHERE darwin.darwin_family = "%s" 
+                                ORDER BY Genus""" % family)
 
     security.declareProtected(view, 'get_species')
     def get_species(self, genus, dbconn):
         """ """
-        return dbconn.query(u'SELECT DISTINCT darwin.darwin_species AS Species FROM darwin WHERE darwin.darwin_genus = "%s" ORDER BY Species' % genus)
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species 
+                                FROM darwin 
+                                WHERE darwin.darwin_genus = "%s" 
+                                ORDER BY Species""" % genus)
 
     security.declareProtected(view, 'get_names')
     def get_names(self, query, dbconn):

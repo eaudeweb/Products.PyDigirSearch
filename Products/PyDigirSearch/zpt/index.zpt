@@ -20,29 +20,19 @@
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
 			<form class="search-form" title="search_form" action="search" method="post">
-				<!-- <div class="field-inline" tal:define="records python:here.get_institutions(dbconn)">
+				<div class="field-inline">
 					<label for="InstitutionCode" i18n:translate="">Institution code</label>
 					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
 						<option value="" i18n:translate="">All</option>
-						<tal:block repeat="record records">
-							<option tal:attributes="value record/InstitutionCode;
-													selected request/SESSION/InstitutionCode|nothing" 
-									tal:content="record/InstitutionCode"/>
-						</tal:block>
 					</select>
-				</div> -->
-				<!-- <div class="field-inline" tal:define="records python:here.get_collections(dbconn)">
+				</div>
+				<div class="field-inline">
 					<label for="CollectionCode" i18n:translate="">Collection</label>
 					<select id="CollectionCode" name="CollectionCode:utf8:ustring">
 						<option value="" i18n:translate="">All</option>
-						<tal:block repeat="record records">
-							<option tal:attributes="value record/CollectionCode;
-													selected request/SESSION/CollectionCode|nothing" 
-									tal:content="record/CollectionCode"/>
-						</tal:block>
 					</select>
 				</div>
-				<div class="field-inline" tal:define="records python:here.get_basisofrecords(dbconn)">
+				<!-- <div class="field-inline" tal:define="records python:here.get_basisofrecords(dbconn)">
 					<label for="BasisOfRecord" i18n:translate="">BasisOfRecord</label>
 					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring">
 						<option value="" i18n:translate="">All</option>
@@ -53,6 +43,7 @@
 						</tal:block>
 					</select>
 				</div> -->
+				<hr />
 				<div class="field-inline">
 					<label for="Family" i18n:translate="">Family</label>
 					<select id="Family" name="Family:utf8:ustring">
