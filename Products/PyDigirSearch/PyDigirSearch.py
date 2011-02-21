@@ -94,7 +94,7 @@ class PyDigirSearch(SimpleItem):
     def open_dbconnection(self):
         """ Create and return a MySQL connection object """
         conn = MySQLConnector()
-        conn.open('localhost', 'repository', 'cornel', 'cornel')
+        conn.open('10.0.0.185', 'repository', 'cornel', 'cornel')
         return conn
 
     security.declareProtected(view, 'search')
@@ -133,57 +133,57 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'get_institutions')
     def get_institutions(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_institutioncode AS InstitutionCode 
-                                FROM darwin 
-                                WHERE darwin.darwin_institutioncode LIKE "%s%%" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_institutioncode AS InstitutionCode
+                                FROM darwin
+                                WHERE darwin.darwin_institutioncode LIKE "%s%%"
                                 ORDER BY InstitutionCode LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_collections')
     def get_collections(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode 
-                                FROM darwin 
-                                WHERE darwin.darwin_collectioncode LIKE "%s%%" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode
+                                FROM darwin
+                                WHERE darwin.darwin_collectioncode LIKE "%s%%"
                                 ORDER BY CollectionCode LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_families')
     def get_families(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_family AS Family 
-                                FROM darwin 
-                                WHERE darwin.darwin_family LIKE "%s%%" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_family AS Family
+                                FROM darwin
+                                WHERE darwin.darwin_family LIKE "%s%%"
                                 ORDER BY Family LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_genres')
     def get_genres(self, family, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus 
-                                FROM darwin 
-                                WHERE darwin.darwin_family = "%s" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus
+                                FROM darwin
+                                WHERE darwin.darwin_family = "%s"
                                 ORDER BY Genus""" % family)
 
     security.declareProtected(view, 'get_species')
     def get_species(self, genus, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species 
-                                FROM darwin 
-                                WHERE darwin.darwin_genus = "%s" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species
+                                FROM darwin
+                                WHERE darwin.darwin_genus = "%s"
                                 ORDER BY Species""" % genus)
 
     security.declareProtected(view, 'get_names')
     def get_names(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificnameauthor AS ScientificNameAuthor 
-                                FROM darwin 
-                                WHERE darwin.darwin_scientificnameauthor LIKE "%s%%" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificnameauthor AS ScientificNameAuthor
+                                FROM darwin
+                                WHERE darwin.darwin_scientificnameauthor LIKE "%s%%"
                                 ORDER BY ScientificNameAuthor LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_localities')
     def get_localities(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_locality AS Locality 
-                                FROM darwin 
-                                WHERE darwin.darwin_locality LIKE "%s%%" 
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_locality AS Locality
+                                FROM darwin
+                                WHERE darwin.darwin_locality LIKE "%s%%"
                                 ORDER BY Locality LIMIT 100""" % query)
 
     def test_sql(self):
@@ -197,7 +197,7 @@ class PyDigirSearch(SimpleItem):
     def get_json(self, REQUEST=None, type='families', value=None):
         """ """
         dbconn = self.open_dbconnection()
-        
+
         records = {}
         if type == 'families':
             records = self.get_families(value, dbconn)
@@ -264,19 +264,19 @@ class PyDigirSearch(SimpleItem):
                         darwin.darwin_latitude AS Latitude,
                         darwin.darwin_sex AS Sex,
                         darwin.darwin_notes AS Notes
-                FROM record 
-                INNER JOIN document ON record.document_id = document.document_id 
-                INNER JOIN folder ON document.folder_id = folder.folder_id 
-                INNER JOIN resource ON folder.resource_id = resource.resource_id  
-                LEFT JOIN darwin ON record.record_id = darwin.record_id %s 
+                FROM record
+                INNER JOIN document ON record.document_id = document.document_id
+                INNER JOIN folder ON document.folder_id = folder.folder_id
+                INNER JOIN resource ON folder.resource_id = resource.resource_id
+                LEFT JOIN darwin ON record.record_id = darwin.record_id %s
                 ORDER BY %s %s LIMIT %s OFFSET %s""" % (sql_condition, sort_on, sort_order, items_per_page, start)
         records = dbconn.query(sql)
 
-        sql = u"""SELECT count(*) AS counter 
-                FROM record 
-                INNER JOIN document ON record.document_id = document.document_id 
-                INNER JOIN folder ON document.folder_id = folder.folder_id 
-                INNER JOIN resource ON folder.resource_id = resource.resource_id 
+        sql = u"""SELECT count(*) AS counter
+                FROM record
+                INNER JOIN document ON record.document_id = document.document_id
+                INNER JOIN folder ON document.folder_id = folder.folder_id
+                INNER JOIN resource ON folder.resource_id = resource.resource_id
                 LEFT JOIN darwin ON record.record_id = darwin.record_id %s""" % sql_condition
         match_count = dbconn.query(sql)
 
