@@ -139,11 +139,6 @@ class PyDigirSearch(SimpleItem):
     # def get_collections(self, dbconn):
     #     """ """
     #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode from darwin ORDER BY CollectionCode')
-    # 
-    # security.declareProtected(view, 'get_basisofrecords')
-    # def get_basisofrecords(self, dbconn):
-    #     """ """
-    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_basisofrecord AS BasisOfRecord from darwin ORDER BY BasisOfRecord')
 
     security.declareProtected(view, 'get_families')
     def get_families(self, query, dbconn):
@@ -160,15 +155,21 @@ class PyDigirSearch(SimpleItem):
         """ """
         return dbconn.query(u'SELECT DISTINCT darwin.darwin_species AS Species FROM darwin WHERE darwin.darwin_genus = "%s" ORDER BY Species' % genus)
 
-    # security.declareProtected(view, 'get_oceans')
-    # def get_oceans(self, dbconn):
-    #     """ """
-    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_continentocean AS ContinentOcean from darwin ORDER BY ContinentOcean')
-    # 
-    # security.declareProtected(view, 'get_countries')
-    # def get_countries(self, dbconn):
-    #     """ """
-    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_country AS Country from darwin ORDER BY Country')
+    security.declareProtected(view, 'get_names')
+    def get_names(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificnameauthor AS ScientificNameAuthor 
+                                FROM darwin 
+                                WHERE darwin.darwin_scientificnameauthor LIKE "%s%%" 
+                                ORDER BY ScientificNameAuthor LIMIT 100""" % query)
+
+    security.declareProtected(view, 'get_localities')
+    def get_localities(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_locality AS Locality 
+                                FROM darwin 
+                                WHERE darwin.darwin_locality LIKE "%s%%" 
+                                ORDER BY Locality LIMIT 100""" % query)
 
     def test_sql(self):
         """ """

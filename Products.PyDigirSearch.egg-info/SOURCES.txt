@@ -5,6 +5,16 @@ Products.PyDigirSearch.egg-info/PKG-INFO
 Products.PyDigirSearch.egg-info/SOURCES.txt
 Products.PyDigirSearch.egg-info/dependency_links.txt
 Products.PyDigirSearch.egg-info/not-zip-safe
+Products.PyDigirSearch.egg-info/requires.txt
 Products.PyDigirSearch.egg-info/top_level.txt
+Products/PyDigirSearch/MySQLConnector.py
 Products/PyDigirSearch/PyDigirSearch.py
 Products/PyDigirSearch/__init__.py
+Products/PyDigirSearch/www/arrows.gif
+Products/PyDigirSearch/www/s.gif
+Products/PyDigirSearch/www/css/digir_search_style.css
+Products/PyDigirSearch/www/js/search_digir.js
+Products/PyDigirSearch/zpt/PyDigirSearch_manage_edit.zpt
+Products/PyDigirSearch/zpt/index.zpt
+Products/PyDigirSearch/zpt/manage_add.zpt
+Products/PyDigirSearch/zpt/results.zpt

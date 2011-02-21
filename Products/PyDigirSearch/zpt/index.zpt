@@ -71,11 +71,14 @@
 						<option value="" i18n:translate=""></option>
 					</select>
 				</div>
-				<!-- <div class="field-inline">
+				<hr />
+				<div class="field-inline">
 					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name Author</label>
-					<input class="text-input" type="text" id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring" tal:attributes="value request/SESSION/ScientificNameAuthor|nothing" />
+					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring" disabled="disabled">
+						<option value="" i18n:translate=""></option>
+					</select>
 				</div>
-				<div class="field-inline" tal:define="records python:here.get_countries(dbconn)">
+				<!-- <div class="field-inline" tal:define="records python:here.get_countries(dbconn)">
 					<label for="Country" i18n:translate="">Country</label>
 					<select id="Country" name="Country:utf8:ustring">
 						<option value="" i18n:translate="">All</option>
@@ -83,11 +86,13 @@
 							<option tal:attributes="value record/Country" tal:content="record/Country"/>
 						</tal:block>
 					</select>
-				</div>
+				</div> -->
 				<div class="field-inline">
 					<label for="Locality" i18n:translate="">Locality</label>
-					<input class="text-input" type="text" id="Locality" name="Locality:utf8:ustring" tal:attributes="value request/SESSION/Locality|nothing" />
-				</div> -->
+					<select id="Locality" name="Locality:utf8:ustring" disabled="disabled">
+						<option value="" i18n:translate=""></option>
+					</select>
+				</div>
 				<div class="field">
 					<input class="submit" type="submit" name="search" value="Search" i18n:attributes="value" />
 				</div>
