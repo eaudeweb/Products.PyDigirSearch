@@ -58,8 +58,8 @@ $.widget("ui.combobox", {
 			.attr("target", select.attr('id'))
 			.val(value)
 			.autocomplete({
-				delay: 0,
-				minLength: 0,
+				delay: 100,
+				minLength: 2,
 				source: this.options['source'],
 				select: this.options['select'],
 				change: this.options['change']
@@ -108,7 +108,7 @@ $.widget("ui.combobox", {
 var family_el = $('#Family');
 var genus_el = $('#Genus');
 var species_el = $('#Species');
-var names_el = $('#ScientificNameAuthor');
+var names_el = $('#ScientificName');
 var locality_el = $('#Locality');
 
 family_el.combobox({
@@ -160,8 +160,8 @@ names_el.combobox({
 		$.getJSON("get_json", {'type': 'names', 'value': request.term}, function(data){
 			response(data.map(function(item) {
 				return {
-					label: item.ScientificNameAuthor,
-					value: item.ScientificNameAuthor,
+					label: item.ScientificName,
+					value: item.ScientificName,
 					option: this
 				}
 			}));

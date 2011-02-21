@@ -64,8 +64,8 @@
 				</div>
 				<hr />
 				<div class="field-inline">
-					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name Author</label>
-					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring" disabled="disabled">
+					<label for="ScientificName" i18n:translate="">Scientific Name</label>
+					<select id="ScientificName" name="ScientificName:utf8:ustring" disabled="disabled">
 						<option value="" i18n:translate=""></option>
 					</select>
 				</div>

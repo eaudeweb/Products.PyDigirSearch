@@ -173,10 +173,10 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'get_names')
     def get_names(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificnameauthor AS ScientificNameAuthor
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificname AS ScientificName
                                 FROM darwin
-                                WHERE darwin.darwin_scientificnameauthor LIKE "%s%%"
-                                ORDER BY ScientificNameAuthor LIMIT 100""" % query)
+                                WHERE darwin.darwin_scientificname LIKE "%s%%"
+                                ORDER BY ScientificName LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_localities')
     def get_localities(self, query, dbconn):
