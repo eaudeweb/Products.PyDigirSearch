@@ -205,6 +205,10 @@ class PyDigirSearch(SimpleItem):
             records = self.get_genres(value, dbconn)
         elif type == 'species':
             records = self.get_species(value, dbconn)
+        elif type == 'localities':
+            records = self.get_localities(value, dbconn)
+        elif type == 'names':
+            records = self.get_names(value, dbconn)
         dbconn.close()
         return json.dumps(records)
 
