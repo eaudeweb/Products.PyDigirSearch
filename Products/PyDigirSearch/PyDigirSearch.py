@@ -1,18 +1,17 @@
-import re
-import os
-from os.path import join, dirname, splitext
-import urllib
-from xml.sax.saxutils import escape
-
-from lxml import etree, objectify
-
+from OFS.SimpleItem import SimpleItem
 from App.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import view_management_screens, view
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from naaya.core.paginator import DiggPaginator, EmptyPage, InvalidPage
 
-from OFS.SimpleItem import SimpleItem
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+from MySQLConnector import MySQLConnector
+
 
 manage_add_html = PageTemplateFile('zpt/manage_add', globals())
 def manage_add_search(self, id, REQUEST=None):
@@ -30,15 +29,17 @@ allow_path('Products.PyDigirSearch:www/css/')
 items_per_page = 10
 
 QUERY_TERMS = {
+    'InstitutionCode': 'equals',
     'CollectionCode': 'equals',
-    'Family': 'like',
+    'BasisOfRecord': 'equals',
+    'Family': 'equals',
     'Genus': 'like',
     'Species': 'like',
     'ScientificNameAuthor': 'like',
+    'ContinentOcean': 'equals',
     'Country': 'equals',
     'Locality': 'like',
     }
-
 
 class PyDigirSearch(SimpleItem):
     """
@@ -90,33 +91,23 @@ class PyDigirSearch(SimpleItem):
         self.recatalogNyObject(self)
         if REQUEST: REQUEST.RESPONSE.redirect('manage_edit_html?save=ok')
 
-    ##################
-    # SEARCH DiGIR   #
-    ##################
+    def open_dbconnection(self):
+        """ Create and return a MySQL connection object """
+        conn = MySQLConnector()
+        conn.open('localhost', 'repository', 'cornel', 'cornel')
+        return conn
+
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
-        self.setSession('CollectionCode',
-            REQUEST.get('CollectionCode', REQUEST.SESSION.get('CollectionCode')))
-        self.setSession('Family',
-            REQUEST.get('Family', REQUEST.SESSION.get('Family')))
-        self.setSession('Genus',
-            REQUEST.get('Genus', REQUEST.SESSION.get('Genus')))
-        self.setSession('Species',
-            REQUEST.get('Species', REQUEST.SESSION.get('Species')))
-        self.setSession('ScientificNameAuthor',
-            REQUEST.get('ScientificNameAuthor', REQUEST.SESSION.get('ScientificNameAuthor')))
-        self.setSession('Country',
-            REQUEST.get('Country', REQUEST.SESSION.get('Country')))
-        self.setSession('Locality',
-            REQUEST.get('Locality', REQUEST.SESSION.get('Locality')))
-        #self.setSession('skey',
-        #    REQUEST.get('skey', REQUEST.SESSION.get('skey', 'CollectionCode')))
-        #self.setSession('page',
-        #    REQUEST.get('page', REQUEST.SESSION.get('page', '1')))
-        response = self.make_search_request(REQUEST)
-        records, match_count, record_count, end_of_records = self.parse_search_response(response)
-        all_records = [number for number in range(int(match_count))]
+        dbconn = self.open_dbconnection()
+
+        for qt in QUERY_TERMS.keys():
+            self.setSession(qt, REQUEST.get(qt, REQUEST.SESSION.get(qt)))
+
+        records, match_count = self.search_database(dbconn, REQUEST)
+        dbconn.close()
+        all_records = [number for number in range(int(match_count[0].get('counter')))]
         pages = self.itemsPaginator(all_records, REQUEST)
 
         return self.results_html(REQUEST, records=records, pages=pages)
@@ -139,200 +130,140 @@ class PyDigirSearch(SimpleItem):
 
         return items
 
-    security.declarePrivate('get_response')
-    def parse_search_response(self, response):
-        """ parse DiGIR response """
-        results = etree.fromstring(response)
-        ns = {
-            'xmlns': 'http://digir.net/schema/protocol/2003/1.0',
-            'darwin': 'http://digir.net/schema/conceptual/darwin/2003/1.0',
-        }
+    # security.declareProtected(view, 'get_institutions')
+    # def get_institutions(self, dbconn):
+    #     """ """
+    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_institutioncode AS InstitutionCode from darwin ORDER BY InstitutionCode')
+    # 
+    # security.declareProtected(view, 'get_collections')
+    # def get_collections(self, dbconn):
+    #     """ """
+    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode from darwin ORDER BY CollectionCode')
+    # 
+    # security.declareProtected(view, 'get_basisofrecords')
+    # def get_basisofrecords(self, dbconn):
+    #     """ """
+    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_basisofrecord AS BasisOfRecord from darwin ORDER BY BasisOfRecord')
 
-        records = []
-        for record in results.xpath('xmlns:content/xmlns:record', namespaces=ns):
-            record_data = {}
-            for child in record.getchildren():
-                record_data.setdefault(child.tag.replace('{%s}' % ns['darwin'], ''), child.text)
-            records.append(record_data)
+    security.declareProtected(view, 'get_families')
+    def get_families(self, query, dbconn):
+        """ """
+        return dbconn.query(u'SELECT DISTINCT darwin.darwin_family AS Family from darwin WHERE darwin.darwin_family LIKE "%s%%" ORDER BY Family LIMIT 100' % query)
 
-        diagnostics = results.xpath('xmlns:diagnostics', namespaces=ns)[0]
-        match_count = diagnostics.xpath('xmlns:diagnostic[@code="MATCH_COUNT"]', namespaces=ns)[0].text
-        record_count = diagnostics.xpath('xmlns:diagnostic[@code="RECORD_COUNT"]', namespaces=ns)[0].text
-        end_of_records = diagnostics.xpath('xmlns:diagnostic[@code="END_OF_RECORDS"]', namespaces=ns)[0].text
+    security.declareProtected(view, 'get_genres')
+    def get_genres(self, family, dbconn):
+        """ """
+        return dbconn.query(u'SELECT DISTINCT darwin.darwin_genus AS Genus FROM darwin WHERE darwin.darwin_family = "%s" ORDER BY Genus' % family)
 
-        return records, match_count, record_count, end_of_records
+    security.declareProtected(view, 'get_species')
+    def get_species(self, genus, dbconn):
+        """ """
+        return dbconn.query(u'SELECT DISTINCT darwin.darwin_species AS Species FROM darwin WHERE darwin.darwin_genus = "%s" ORDER BY Species' % genus)
 
-    security.declarePrivate('make_request')
-    def make_search_request(self, params):
-        """ make a request to DiGIR provider """
-        xml = self.build_search_xml(params)
+    # security.declareProtected(view, 'get_oceans')
+    # def get_oceans(self, dbconn):
+    #     """ """
+    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_continentocean AS ContinentOcean from darwin ORDER BY ContinentOcean')
+    # 
+    # security.declareProtected(view, 'get_countries')
+    # def get_countries(self, dbconn):
+    #     """ """
+    #     return dbconn.query(u'SELECT DISTINCT darwin.darwin_country AS Country from darwin ORDER BY Country')
 
-        sort_pieces = params.get('skey', 'CollectionCode').split('_')
+    def test_sql(self):
+        """ """
+        sql = u"""select darwin_locality from darwin where darwin_collectioncode = 'Baraniak'"""
+        dbconn = self.open_dbconnection()
+        res = dbconn.query(sql)
+        return res[0]['darwin_locality']
+
+    security.declareProtected(view, 'get_json')
+    def get_json(self, REQUEST=None, type='families', value=None):
+        """ """
+        dbconn = self.open_dbconnection()
+        
+        records = {}
+        if type == 'families':
+            records = self.get_families(value, dbconn)
+        elif type == 'genus':
+            records = self.get_genres(value, dbconn)
+        elif type == 'species':
+            records = self.get_species(value, dbconn)
+        dbconn.close()
+        return json.dumps(records)
+
+    security.declarePrivate('search_database')
+    def search_database(self, dbconn, request):
+
+        sort_pieces = request.get('skey', 'CollectionCode').split('_')
         if len(sort_pieces) > 1:
             sort_order = 'DESC'
         else:
             sort_order = 'ASC'
         sort_on = 'darwin.darwin_%s' % sort_pieces[0].lower()
 
-        params = urllib.urlencode({'doc': xml, 'sort_on':sort_on, 'sort_order':sort_order})
-        opener = urllib.FancyURLopener({})
-        f = opener.open(self.access_point, params)
-        response = f.read()
-        f.close()
-        return response
-
-    security.declarePrivate('build_xml')
-    def build_search_xml(self, params):
-        """ build the request xml """
-        xmlns = "http://digir.net/schema/protocol/2003/1.0"
-        xsd = "http://www.w3.org/2001/XMLSchema"
-        darwin = "http://digir.net/schema/conceptual/darwin/2003/1.0"
-        xsi = "http://www.w3.org/2001/XMLSchema-instance"
-        schemaLocation = "%s %s %s %s" % ('http://digir.net/schema/protocol/2003/1.0',
-                                        'http://digir.sourceforge.net/schema/protocol/2003/1.0/digir.xsd',
-                                        'http://digir.net/schema/conceptual/darwin/2003/1.0',
-                                        'http://digir.sourceforge.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd')
-
-        root = etree.Element("{"+xmlns+"}request", attrib={"{" + xsi + "}schemaLocation" : schemaLocation}, 
-                                nsmap={'xsi':xsi, None:xmlns, 'xsd':xsd, 'darwin':darwin})
-
-        #build header
-        header = etree.SubElement(root, "header")
-        version = etree.SubElement(header, "version")
-        version.text = '1.0.0'
-        sendTime = etree.SubElement(header, "sendTime")
-        sendTime.text = '2003-06-05T11:57:00-03:00'
-        source = etree.SubElement(header, "source")
-        source.text = self.host_name
-        destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
-        destination.text = self.access_point
-        type = etree.SubElement(header, "type",)
-        type.text = "search"
-
-        #build search
-        search = etree.SubElement(root, "search")
-        filter = etree.SubElement(search, "filter")
-
-        #build filters
-        filters_container = self.build_filters(params)
-        filter.append(filters_container.getchildren()[0])
-
-        #build records
         try:
-            page = int(params.get('page', '1'))
+            page = int(request.get('page', '1'))
         except ValueError:
             page = 1
+        start = (page-1)*items_per_page
 
-        start = str((page-1)*items_per_page)
-        records = etree.SubElement(search, "records", limit=str(items_per_page), start=start)
-        structure = etree.SubElement(records, "structure", schemaLocation="http://digir.sourceforge.net/schema/conceptual/darwin/full/2003/1.0/darwin2full.xsd")
-        count = etree.SubElement(search, "count")
-        count.text = "true"
-        return (etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True))
-
-    security.declarePrivate('join_filters')
-    def join_filters(self, node1, node2, params):
-        if node1 in QUERY_TERMS.keys():
-            node1_value = "<darwin:%s>%s</darwin:%s>" % (node1, escape(params.SESSION.get(node1)), node1)
-            node1_condition = "<%s>%s</%s>" % (QUERY_TERMS[node1], node1_value, QUERY_TERMS[node1])
+        query_terms = [ qt for qt, qv in request.SESSION.items() if qv ]
+        if query_terms:
+            sql_condition = 'WHERE '
         else:
-            node1_condition = node1
-        node2_value = "<darwin:%s>%s</darwin:%s>" % (node2, escape(params.SESSION.get(node2)), node2)
-        node2_condition = "<%s>%s</%s>" % (QUERY_TERMS[node2], node2_value, QUERY_TERMS[node2])
-        return "<and>%s%s</and>" % (node1_condition, node2_condition)
+            sql_condition = ''
 
-    security.declarePrivate('build_filters')
-    def build_filters(self, params):
-        qnames = [ k for k,v in params.SESSION.items() if v ]
-        if qnames:
-            partial = qnames[0]
-            if len(qnames) > 1:
-                for name in qnames[1:]:
-                    partial = self.join_filters(partial, name, params)
-            else:
-                partial_value = "<darwin:%s>%s</darwin:%s>" % (partial, escape(params.SESSION.get(partial)), partial)
-                partial = "<%s>%s</%s>" % (QUERY_TERMS[partial], partial_value, QUERY_TERMS[partial])
-        else:
-            partial = "<like><darwin:CollectionCode></darwin:CollectionCode></like>"    #DiGIR request at least one condition
-        # namespace prefix darwin must be defined otherwise lxml will failed to parse this xml
-        # we define the darwin namespace on a dummy container
-        xml = "<request xmlns='http://digir.net/schema/protocol/2003/1.0' xmlns:darwin='http://digir.net/schema/conceptual/darwin/2003/1.0'>" + partial + "</request>"
-        return etree.fromstring(xml)
+        for qt in query_terms:
+            if QUERY_TERMS[qt] == 'equals':
+                sql_condition += u"%s = '%s'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
+            elif QUERY_TERMS[qt] == 'like':
+                sql_condition += u"%s LIKE '%s%%'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
+            if query_terms.index(qt) < len(query_terms)-1:
+                sql_condition += u" AND "
 
+        sql = u"""SELECT darwin.darwin_collectioncode AS CollectionCode,
+                        darwin.darwin_institutioncode AS InstitutionCode,
+                        darwin.darwin_scientificname AS ScientificName,
+                        darwin.darwin_basisofrecord AS BasisOfRecord,
+                        darwin.darwin_kingdom AS Kingdom,
+                        darwin.darwin_phylum AS Phylum,
+                        darwin.darwin_class AS Class,
+                        darwin.darwin_order AS `Order`,
+                        darwin.darwin_family AS Family,
+                        darwin.darwin_genus AS Genus,
+                        darwin.darwin_species AS Species,
+                        darwin.darwin_subspecies AS Subspecies,
+                        darwin.darwin_scientificnameauthor AS ScientificNameAuthor,
+                        darwin.darwin_typestatus AS TypeStatus,
+                        darwin.darwin_collector AS Collector,
+                        darwin.darwin_yearcollected AS YearCollected,
+                        darwin.darwin_monthcollected AS MonthCollected,
+                        darwin.darwin_daycollected AS DayCollected,
+                        darwin.darwin_continentocean AS ContinentOcean,
+                        darwin.darwin_country AS Country,
+                        darwin.darwin_county AS County,
+                        darwin.darwin_locality AS Locality,
+                        darwin.darwin_longitude AS Longitude,
+                        darwin.darwin_latitude AS Latitude,
+                        darwin.darwin_sex AS Sex,
+                        darwin.darwin_notes AS Notes
+                FROM record 
+                INNER JOIN document ON record.document_id = document.document_id 
+                INNER JOIN folder ON document.folder_id = folder.folder_id 
+                INNER JOIN resource ON folder.resource_id = resource.resource_id  
+                LEFT JOIN darwin ON record.record_id = darwin.record_id %s 
+                ORDER BY %s %s LIMIT %s OFFSET %s""" % (sql_condition, sort_on, sort_order, items_per_page, start)
+        records = dbconn.query(sql)
 
-    #########################
-    # GET DiGIR INVENTORY   #
-    #########################
+        sql = u"""SELECT count(*) AS counter 
+                FROM record 
+                INNER JOIN document ON record.document_id = document.document_id 
+                INNER JOIN folder ON document.folder_id = folder.folder_id 
+                INNER JOIN resource ON folder.resource_id = resource.resource_id 
+                LEFT JOIN darwin ON record.record_id = darwin.record_id %s""" % sql_condition
+        match_count = dbconn.query(sql)
 
-    security.declareProtected(view, 'get_inventory')
-    def get_inventory(self):
-        """ """
-        response = self.make_inventory_request()
-        records = self.parse_inventory_response(response)
-        return records
-
-    security.declarePrivate('make_inventory_request')
-    def make_inventory_request(self):
-        """ make a request to DiGIR provider """
-        xml = self.build_inventory_xml()
-        params = urllib.urlencode({'doc': xml})
-        opener = urllib.FancyURLopener({})
-        f = opener.open(self.access_point, params)
-        response = f.read()
-        f.close()
-        return response
-
-    security.declarePrivate('build_inventory_xml')
-    def build_inventory_xml(self):
-        """ build the request inventory xml """
-        xmlns = "http://digir.net/schema/protocol/2003/1.0"
-        darwin = "http://digir.net/schema/conceptual/darwin/2003/1.0"
-        schemaLocation = "%s %s" % ('http://digir.net/schema/protocol/2003/1.0',
-                                        'http://digir.net/schema/conceptual/darwin/2003/1.0')
-
-        root = etree.Element("{"+xmlns+"}request", nsmap={None:xmlns, 'darwin':darwin})
-
-        #build header
-        header = etree.SubElement(root, "header")
-        version = etree.SubElement(header, "version")
-        version.text = '1.0.0'
-        sendTime = etree.SubElement(header, "sendTime")
-        sendTime.text = '2003-06-05T11:57:00-03:00'
-        source = etree.SubElement(header, "source")
-        source.text = self.host_name
-        destination = etree.SubElement(header, "destination", resource="rsr27f332f85e2d9136fee6e1b28988702d")
-        destination.text = self.access_point
-        type = etree.SubElement(header, "type",)
-        type.text = "inventory"
-
-        #build inventory
-        inventory = etree.SubElement(root, "inventory")
-        collection_code = etree.SubElement(inventory, "{http://digir.net/schema/conceptual/darwin/2003/1.0}CollectionCode")
-        count = etree.SubElement(inventory, "count")
-        count.text = "true"
-        return (etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True))
-
-    security.declarePrivate('parse_inventory_response')
-    def parse_inventory_response(self, response):
-        """ parse DiGIR inventory response """
-        results = etree.fromstring(response)
-        ns = {
-            'xmlns': 'http://digir.net/schema/protocol/2003/1.0',
-            'darwin': 'http://digir.net/schema/conceptual/darwin/2003/1.0',
-        }
-
-        records = []
-        for record in results.xpath('xmlns:content/xmlns:record', namespaces=ns):
-            record_data = {}
-            for child in record.getchildren():
-                record_data.setdefault(child.tag.replace('{%s}' % ns['darwin'], ''), child.text)
-            records.append(record_data)
-
-        # diagnostics = results.xpath('xmlns:diagnostics', namespaces=ns)[0]
-        # match_count = diagnostics.xpath('xmlns:diagnostic[@code="MATCH_COUNT"]', namespaces=ns)[0].text
-        # record_count = diagnostics.xpath('xmlns:diagnostic[@code="RECORD_COUNT"]', namespaces=ns)[0].text
-        # end_of_records = diagnostics.xpath('xmlns:diagnostic[@code="END_OF_RECORDS"]', namespaces=ns)[0].text
-
-        return records
+        return records, match_count
 
 InitializeClass(PyDigirSearch)

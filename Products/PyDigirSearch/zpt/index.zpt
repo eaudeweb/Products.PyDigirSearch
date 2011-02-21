@@ -6,90 +6,93 @@
 
 	<metal:block metal:fill-slot="head">
 		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
+		<script src="/misc_/PyDigirSearch/search_digir.js"></script>
+		<style>
+		.ui-button { margin-left: -1px; }
+		.ui-button-icon-only .ui-button-text { padding: 0.35em; } 
+		.ui-autocomplete-input { margin: 0; padding: 0.48em 0 0.47em 0.45em; }
+		</style>
 	</metal:block>
 
 	<metal:block fill-slot="body">
 		<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
-		<div id="center_content" tal:define="collections here/get_inventory">
+		<div id="center_content" tal:define="dbconn here/open_dbconnection">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
 			<form class="search-form" title="search_form" action="search" method="post">
-				<div class="form-row">
-					<div class="field">
-						<label for="CollectionCode" i18n:translate="">Collection</label>
-						<select id="CollectionCode" name="CollectionCode:utf8:ustring">
-							<option value="" i18n:translate="">All</option>
-							<tal:block repeat="collection collections">
-								<option tal:attributes="value collection/CollectionCode" tal:content="collection/CollectionCode"/>
-							</tal:block>
-						</select>
-					</div>
+				<!-- <div class="field-inline" tal:define="records python:here.get_institutions(dbconn)">
+					<label for="InstitutionCode" i18n:translate="">Institution code</label>
+					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
+						<option value="" i18n:translate="">All</option>
+						<tal:block repeat="record records">
+							<option tal:attributes="value record/InstitutionCode;
+													selected request/SESSION/InstitutionCode|nothing" 
+									tal:content="record/InstitutionCode"/>
+						</tal:block>
+					</select>
+				</div> -->
+				<!-- <div class="field-inline" tal:define="records python:here.get_collections(dbconn)">
+					<label for="CollectionCode" i18n:translate="">Collection</label>
+					<select id="CollectionCode" name="CollectionCode:utf8:ustring">
+						<option value="" i18n:translate="">All</option>
+						<tal:block repeat="record records">
+							<option tal:attributes="value record/CollectionCode;
+													selected request/SESSION/CollectionCode|nothing" 
+									tal:content="record/CollectionCode"/>
+						</tal:block>
+					</select>
 				</div>
-				<div class="clear"> </div>
-				<div class="form-row">
-					<div class="form-left-element">
-						<div class="field">
-							<label for="Family" i18n:translate="">Family</label>
-							<input class="text-input" type="text" id="Family"
-							name="Family:utf8:ustring"
-							tal:attributes="value request/SESSION/Family|nothing" />
-						</div>
-					</div>
-					<div class="form-right-element">
-						<div class="field">
-							<label for="Genus" i18n:translate="">Genus</label>
-							<input class="text-input" type="text" id="Genus"
-							name="Genus:utf8:ustring"
-							tal:attributes="value request/SESSION/Genus|nothing" />
-						</div>
-					</div>
-					<div class="clear"> </div>
+				<div class="field-inline" tal:define="records python:here.get_basisofrecords(dbconn)">
+					<label for="BasisOfRecord" i18n:translate="">BasisOfRecord</label>
+					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring">
+						<option value="" i18n:translate="">All</option>
+						<tal:block repeat="record records">
+							<option tal:attributes="value record/BasisOfRecord;
+													selected request/SESSION/BasisOfRecord|nothing"
+									tal:content="record/BasisOfRecord"/>
+						</tal:block>
+					</select>
+				</div> -->
+				<div class="field-inline">
+					<label for="Family" i18n:translate="">Family</label>
+					<select id="Family" name="Family:utf8:ustring">
+						<option value="" i18n:translate="">All</option>
+					</select>
 				</div>
-				<div class="form-row">
-					<div class="form-left-element">
-						<div class="field">
-							<label for="Species" i18n:translate="">Species</label>
-							<input class="text-input" type="text" id="Species"
-							name="Species:utf8:ustring"
-							tal:attributes="value request/SESSION/Species|nothing" />
-						</div>
-					</div>
-					<div class="form-right-element">
-						<div class="field">
-							<label for="ScientificNameAuthor" i18n:translate="">Scientific Name Author</label>
-							<input class="text-input" type="text" id="ScientificNameAuthor"
-							name="ScientificNameAuthor:utf8:ustring"
-							tal:attributes="value request/SESSION/ScientificNameAuthor|nothing" />
-						</div>
-					</div>
-					<div class="clear"> </div>
+				<div class="field-inline">
+					<label for="Genus" i18n:translate="">Genus</label>
+					<select id="Genus" name="Genus:utf8:ustring" disabled="disabled">
+						<option value="" i18n:translate=""></option>
+					</select>
 				</div>
-				<div class="form-row">
-					<div class="form-left-element">
-						<div class="field">
-							<label for="Country" i18n:translate="">Country</label>
-							<input class="text-input" type="text" id="Country"
-							name="Country:utf8:ustring"
-							tal:attributes="value request/SESSION/Country|nothing" />
-						</div>
-					</div>
-					<div class="form-right-element">
-						<div class="field">
-							<label for="Locality" i18n:translate="">Locality</label>
-							<input class="text-input" type="text" id="Locality"
-							name="Locality:utf8:ustring"
-							tal:attributes="value request/SESSION/Locality|nothing" />
-						</div>
-					</div>
-					<div class="clear"> </div>
+				<div class="field-inline">
+					<label for="Species" i18n:translate="">Species</label>
+					<select id="Species" name="Species:utf8:ustring" disabled="disabled">
+						<option value="" i18n:translate=""></option>
+					</select>
 				</div>
-				<div class="clear"> </div>
-				<div class="form-row">
-					<div class="field">
-						<input class="submit" type="submit" name="search" value="Search" i18n:attributes="value" />
-					</div>
+				<!-- <div class="field-inline">
+					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name Author</label>
+					<input class="text-input" type="text" id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring" tal:attributes="value request/SESSION/ScientificNameAuthor|nothing" />
+				</div>
+				<div class="field-inline" tal:define="records python:here.get_countries(dbconn)">
+					<label for="Country" i18n:translate="">Country</label>
+					<select id="Country" name="Country:utf8:ustring">
+						<option value="" i18n:translate="">All</option>
+						<tal:block repeat="record records">
+							<option tal:attributes="value record/Country" tal:content="record/Country"/>
+						</tal:block>
+					</select>
+				</div>
+				<div class="field-inline">
+					<label for="Locality" i18n:translate="">Locality</label>
+					<input class="text-input" type="text" id="Locality" name="Locality:utf8:ustring" tal:attributes="value request/SESSION/Locality|nothing" />
+				</div> -->
+				<div class="field">
+					<input class="submit" type="submit" name="search" value="Search" i18n:attributes="value" />
 				</div>
 			</form>
+			<tal:block define="dummy dbconn/close" />
 		</div>
 	</metal:block>
 

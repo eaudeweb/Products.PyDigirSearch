@@ -181,10 +181,6 @@
 							<div class="PyDigir_collection_details">
 							<table class="datatable">
 								<tr>
-									<th class="PyDigirLabel" i18n:translate="">Collector number</th>
-									<td tal:content="record/Collector"/>
-								</tr>
-								<tr>
 									<th i18n:translate="">Collection number</th>
 									<td tal:content="record/CollectionCode"/>
 								</tr>
@@ -209,14 +205,6 @@
 									<td tal:attributes="id string:lon_${repeat/record/index}" tal:content="record/Longitude"/>
 								</tr>
 								<tr>
-									<th i18n:translate="">MinimumElevation</th>
-									<td tal:content="record/MinimumElevation"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">MaximumElevation</th>
-									<td tal:content="record/MaximumElevation"/>
-								</tr>
-								<tr>
 									<th i18n:translate="">Date collected</th>
 									<td tal:content="string:${record/YearCollected}/${record/MonthCollected}/${record/DayCollected}"/>
 								</tr>
@@ -231,10 +219,6 @@
 								<tr>
 									<th i18n:translate="">Species</th>
 									<td tal:content="record/Species"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">IdentifiedBy</th>
-									<td tal:content="record/IdentifiedBy"/>
 								</tr>
 								<tr>
 									<th i18n:translate="">Notes</th>
