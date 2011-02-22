@@ -9,6 +9,14 @@
 	<input type="text" name="access_point" size="100" tal:attributes="value here/access_point|nothing" />
 	<div class="form-label">Host name</div>
 	<input type="text" name="host_name" size="100" tal:attributes="value here/host_name|nothing" />
+	<div class="form-label">MySQL hostname</div>
+	<input type="text" name="mysql_host" size="100" tal:attributes="value here/mysql_connection/host|nothing" />
+	<div class="form-label">MySQL database</div>
+	<input type="text" name="mysql_name" size="100" tal:attributes="value here/mysql_connection/name|nothing" />
+	<div class="form-label">MySQL username</div>
+	<input type="text" name="mysql_user" size="100" tal:attributes="value here/mysql_connection/user|nothing" />
+	<div class="form-label">MySQL password</div>
+	<input type="text" name="mysql_pass" size="100" tal:attributes="value here/mysql_connection/pass|nothing" />
 	<br/>
 	<br/>
 	<div><input type="submit" value="Save properties" /></div>

@@ -110,18 +110,38 @@ var genus_el = $('#Genus');
 var species_el = $('#Species');
 var names_el = $('#ScientificName');
 var locality_el = $('#Locality');
+var institution_el = $('#InstitutionCode');
+var collection_el = $('#CollectionCode');
+
+function handle_source(type, request, response){
+	$.getJSON("get_json", {'type': type, 'value': request.term}, function(data){
+		response(data.map(function(item) {
+			for (i in item){
+				return {
+					label: item[i],
+					value: item[i],
+					option: this
+				}
+			}
+		}));
+	});
+}
+
+institution_el.combobox({
+	source: function(request, response){
+		handle_source('institutions', request, response);
+	}
+});
+
+collection_el.combobox({
+	source: function(request, response){
+		handle_source('collections', request, response);
+	}
+});
 
 family_el.combobox({
 	source: function(request, response){
-		$.getJSON("get_json", {'type': 'families', 'value': request.term}, function(data){
-			response(data.map(function(item) {
-				return {
-					label: item.Family,
-					value: item.Family,
-					option: this
-				}
-			}));
-		});
+		handle_source('families', request, response);
 	},
 	select: function(event, ui){
 		ui.item.option.selected = true;
@@ -157,29 +177,13 @@ species_el.combobox();
 
 names_el.combobox({
 	source: function(request, response){
-		$.getJSON("get_json", {'type': 'names', 'value': request.term}, function(data){
-			response(data.map(function(item) {
-				return {
-					label: item.ScientificName,
-					value: item.ScientificName,
-					option: this
-				}
-			}));
-		});
+		handle_source('names', request, response);
 	},
 });
 
 locality_el.combobox({
 	source: function(request, response){
-		$.getJSON("get_json", {'type': 'localities', 'value': request.term}, function(data){
-			response(data.map(function(item) {
-				return {
-					label: item.Locality,
-					value: item.Locality,
-					option: this
-				}
-			}));
-		});
+		handle_source('localities', request, response);
 	},
 });
 

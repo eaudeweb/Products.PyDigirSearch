@@ -63,6 +63,11 @@ class PyDigirSearch(SimpleItem):
         self.id = id
         self.access_point = 'http://localhost:8080/DigirProvider'
         self.host_name = 'http://localhost:8080'
+        self.mysql_connection = {}
+        self.mysql_connection['host'] = 'localhost'
+        self.mysql_connection['name'] = 'repository'
+        self.mysql_connection['user'] = 'cornel'
+        self.mysql_connection['pass'] = 'cornel'
 
     security.declareProtected(view, 'index_html')
     index_html = PageTemplateFile('zpt/index', globals())
@@ -86,6 +91,11 @@ class PyDigirSearch(SimpleItem):
         self.access_point = access_point
         host_name = params.pop('host_name')
         self.host_name = host_name
+        self.mysql_connection = {}
+        self.mysql_connection['host'] = params.pop('mysql_host')
+        self.mysql_connection['name'] = params.pop('mysql_name')
+        self.mysql_connection['user'] = params.pop('mysql_user')
+        self.mysql_connection['pass'] = params.pop('mysql_pass')
 
         self._p_changed = 1
         self.recatalogNyObject(self)
@@ -94,7 +104,8 @@ class PyDigirSearch(SimpleItem):
     def open_dbconnection(self):
         """ Create and return a MySQL connection object """
         conn = MySQLConnector()
-        conn.open('10.0.0.185', 'repository', 'cornel', 'cornel')
+        conn.open(self.mysql_connection['host'], self.mysql_connection['name'],
+                  self.mysql_connection['user'], self.mysql_connection['pass'])
         return conn
 
     security.declareProtected(view, 'search')
@@ -209,6 +220,10 @@ class PyDigirSearch(SimpleItem):
             records = self.get_localities(value, dbconn)
         elif type == 'names':
             records = self.get_names(value, dbconn)
+        elif type == 'institutions':
+            records = self.get_institutions(value, dbconn)
+        elif type == 'collections':
+            records = self.get_collections(value, dbconn)
         dbconn.close()
         return json.dumps(records)
 
