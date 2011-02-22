@@ -23,6 +23,12 @@ $.widget("ui.combobox", {
 		},
 		select: function(event, ui) {
 			ui.item.option.selected = true;
+			//Set value to the select
+			var select = $('#' + $(this).attr('target'));
+			if(select.find("[value="+ ui.item.value+"]")){
+				select.append($("<option>").val(ui.item.value));
+			}
+			select.val(ui.item.value).trigger("change");
 		},
 		change: function(event, ui) {
 			var self = $(this);
@@ -58,7 +64,7 @@ $.widget("ui.combobox", {
 			.attr("target", select.attr('id'))
 			.val(value)
 			.autocomplete({
-				delay: 100,
+				delay: 300,
 				minLength: 2,
 				source: this.options['source'],
 				select: this.options['select'],
@@ -90,10 +96,12 @@ $.widget("ui.combobox", {
 					input.autocomplete("close");
 					return;
 				}
-
+				input.autocomplete("option", 'minLength', [0]);
 				// pass empty string as value to search for, displaying all results
-				input.autocomplete("search", "");
+				input.autocomplete("search", input.val());
 				input.focus();
+				//Revert to the previous length
+				input.autocomplete("option", 'minLength', [2]);
 			});
 	},
 
