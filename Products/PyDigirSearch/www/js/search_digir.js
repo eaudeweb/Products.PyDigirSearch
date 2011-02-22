@@ -153,9 +153,18 @@ family_el.combobox({
 	},
 	select: function(event, ui){
 		ui.item.option.selected = true;
+
+		//Set value to the select
+		var select = $('#' + $(this).attr('target'));
+		if(select.find("[value="+ ui.item.value+"]")){
+			select.append($("<option>").val(ui.item.value));
+		}
+		select.val(ui.item.value).trigger("change");
+
 		genus_el.empty();
 		species_el.empty();
-		$.getJSON('get_json', {'type': 'genus', 'value': this.value}, function(data){
+
+		$.getJSON('get_json', {'type': 'genus', 'value': ui.item.value}, function(data){
 			$.each(data, function(){
 				var val = this.Genus;
 				var new_option = $("<option>").val(val).text(val);
