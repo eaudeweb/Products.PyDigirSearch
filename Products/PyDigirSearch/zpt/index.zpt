@@ -22,47 +22,81 @@
 			<form class="search-form" title="search_form" action="search" method="post">
 				<div class="field-inline">
 					<label for="InstitutionCode" i18n:translate="">Institution code</label>
-					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring"></select>
+					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('InstitutionCode')">
+							<option tal:attributes="value request/SESSION/InstitutionCode" tal:content="request/SESSION/InstitutionCode" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<div class="field-inline">
 					<label for="CollectionCode" i18n:translate="">Collection</label>
-					<select id="CollectionCode" name="CollectionCode:utf8:ustring"></select>
+					<select id="CollectionCode" name="CollectionCode:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('CollectionCode')">
+							<option tal:attributes="value request/SESSION/CollectionCode" tal:content="request/SESSION/CollectionCode" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<div class="field-inline">
 					<label for="BasisOfRecord" i18n:translate="">Basis of Record</label>
-					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring"></select>
+					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('BasisOfRecord')">
+							<option tal:attributes="value request/SESSION/BasisOfRecord" tal:content="request/SESSION/BasisOfRecord" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<hr />
 				<div class="field-inline">
 					<label for="Family" i18n:translate="">Family</label>
-					<select id="Family" name="Family:utf8:ustring"></select>
+					<select id="Family" name="Family:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('Family')">
+							<option tal:attributes="value request/SESSION/Family" tal:content="request/SESSION/Family" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<div class="field-inline">
 					<label for="Genus" i18n:translate="">Genus</label>
-					<select id="Genus" name="Genus:utf8:ustring"></select>
+					<select id="Genus" name="Genus:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('Genus')">
+							<option tal:attributes="value request/SESSION/Genus" tal:content="request/SESSION/Genus" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<div class="field-inline">
 					<label for="Species" i18n:translate="">Species</label>
-					<select id="Species" name="Species:utf8:ustring"></select>
+					<select id="Species" name="Species:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('Species')">
+							<option tal:attributes="value request/SESSION/Species" tal:content="request/SESSION/Species" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<hr />
 				<div class="field-inline">
 					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name</label>
-					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring"></select>
+					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('ScientificNameAuthor')">
+							<option tal:attributes="value request/SESSION/ScientificNameAuthor" tal:content="request/SESSION/ScientificNameAuthor" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<div class="field-inline">
 					<label for="Country" i18n:translate="">Country</label>
 					<select id="Country" name="Country:utf8:ustring">
-						<option value="" i18n:translate="">All</option>
+						<tal:block condition="python: request.SESSION.get('Country')">
+							<option tal:attributes="value request/SESSION/Country" tal:content="request/SESSION/Country" selected="selected"></option>
+						</tal:block>
 					</select>
 				</div>
 				<div class="field-inline">
 					<label for="Locality" i18n:translate="">Locality</label>
-					<select id="Locality" name="Locality:utf8:ustring"></select>
+					<select id="Locality" name="Locality:utf8:ustring">
+						<tal:block condition="python: request.SESSION.get('Locality')">
+							<option tal:attributes="value request/SESSION/Locality" tal:content="request/SESSION/Locality" selected="selected"></option>
+						</tal:block>
+					</select>
 				</div>
 				<div class="field">
 					<input class="submit" type="submit" name="search" value="Search" i18n:attributes="value" />
-					<input class="submit" type="reset" value="Reset" i18n:attributes="value" />
+					<input class="submit" id="reset-button" type="reset" value="Reset" i18n:attributes="value" />
 				</div>
 			</form>
 			<tal:block define="dummy dbconn/close" />

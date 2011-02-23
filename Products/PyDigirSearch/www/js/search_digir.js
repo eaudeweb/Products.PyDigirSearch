@@ -43,6 +43,7 @@ $.widget("ui.combobox", {
 			selected = select.children(":selected"),
 			value = selected.val() ? selected.text() : "";
 
+		console.log(value);
 		var input = this.input = $("<input>")
 			.insertAfter(select)
 			.attr("target", select.attr('id'))
@@ -240,4 +241,8 @@ locality_el.combobox({
 	},
 });
 
+
+$("#reset-button").click(function(){
+	$("select").empty();
+});
 });

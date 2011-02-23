@@ -1,14 +1,17 @@
+# -*- coding: utf-8 -*-
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
 from OFS.SimpleItem import SimpleItem
 from App.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import view_management_screens, view
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from naaya.core.paginator import DiggPaginator, EmptyPage, InvalidPage
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+from naaya.core.paginator import DiggPaginator, EmptyPage, InvalidPage
+from naaya.core.utils import force_to_unicode
 
 from MySQLConnector import MySQLConnector
 
@@ -246,6 +249,7 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'get_json')
     def get_json(self, REQUEST=None, type='families', value=None):
         """ """
+        value = force_to_unicode(value)
         dbconn = self.open_dbconnection()
 
         records = {}
