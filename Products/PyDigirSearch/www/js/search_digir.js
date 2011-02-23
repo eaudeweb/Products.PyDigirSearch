@@ -3,23 +3,7 @@ $(document).ready(function(){
 $.widget("ui.combobox", {
 	options: {
 		source: function(request, response){
-			var select = $('#' + this.element.attr('target'));
-			var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
-			response(select.children("option").map(function() {
-				var text = $(this).text();
-				if (this.value && (!request.term || matcher.test(text))){
-					return {
-						label: text.replace(
-							new RegExp(
-								"(?![^&;]+;)(?!<[^<>]*)(" +
-								$.ui.autocomplete.escapeRegex(request.term) +
-								")(?![^<>]*>)(?![^&;]+;)", "gi"
-							), "<strong>$1</strong>"),
-						value: text,
-						option: this
-					}
-				}
-			}));
+			options_source(this, request, response);
 		},
 		select: function(event, ui) {
 			ui.item.option.selected = true;
@@ -124,6 +108,26 @@ var basisofrecord_el = $('#BasisOfRecord');
 var country_el = $('#Country');
 
 
+function options_source(self, request, response){
+	var select = $('#' + self.element.attr('target'));
+	var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+	response(select.children("option").map(function() {
+		var text = $(this).text();
+		if (this.value && (!request.term || matcher.test(text))){
+			return {
+				label: text.replace(
+					new RegExp(
+						"(?![^&;]+;)(?!<[^<>]*)(" +
+						$.ui.autocomplete.escapeRegex(request.term) +
+						")(?![^<>]*>)(?![^&;]+;)", "gi"
+					), "<strong>$1</strong>"),
+				value: text,
+				option: this
+			}
+		}
+	}));
+}
+
 function handle_source(type, request, response){
 	$.getJSON("get_json", {'type': type, 'value': request.term}, function(data){
 		response(data.map(function(item) {
@@ -173,7 +177,8 @@ family_el.combobox({
 		genus_el.empty();
 		species_el.empty();
 
-		$.getJSON('get_json', {'type': 'genus', 'value': ui.item.value}, function(data){
+		$.getJSON('get_json', {'type': 'genus_by_family',
+				  'value': ui.item.value}, function(data){
 			$.each(data, function(){
 				var val = this.Genus;
 				var new_option = $("<option>").val(val).text(val);
@@ -185,10 +190,18 @@ family_el.combobox({
 });
 
 genus_el.combobox({
+	source: function(request, response){
+		if (genus_el.children("option").length > 0){
+			options_source(this, request, response);
+		}else{
+			handle_source('genus', request, response);
+		}
+	},
 	select: function(event, ui){
 		ui.item.option.selected = true;
 		species_el.empty();
-		$.getJSON('get_json', {'type': 'species', 'value': this.value}, function(data){
+		$.getJSON('get_json', {'type': 'species_by_genus', 'value': ui.item.value},
+				  function(data){
 			$.each(data, function(){
 				var val = this.Species;
 				var new_option = $("<option>").val(val).text(val);
@@ -199,7 +212,15 @@ genus_el.combobox({
 	}
 });
 
-species_el.combobox();
+species_el.combobox({
+	source: function(request, response){
+		if (species_el.children("option").length > 0){
+			options_source(this, request, response);
+		}else{
+			handle_source('species', request, response);
+		}
+	},
+});
 
 names_el.combobox({
 	source: function(request, response){

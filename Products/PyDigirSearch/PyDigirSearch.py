@@ -172,21 +172,45 @@ class PyDigirSearch(SimpleItem):
                                 WHERE darwin.darwin_basisofrecord LIKE "%s%%"
                                 ORDER BY BasisOfRecord""" % query)
 
-    security.declareProtected(view, 'get_genres')
-    def get_genres(self, family, dbconn):
+    security.declareProtected(view, 'get_families')
+    def get_families(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_family AS Family
+                                FROM darwin
+                                WHERE darwin.darwin_family LIKE "%s%%"
+                                ORDER BY Family""" % query)
+
+    security.declareProtected(view, 'get_genus_by_family')
+    def get_genus_by_family(self, family, dbconn):
         """ """
         return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus
                                 FROM darwin
                                 WHERE darwin.darwin_family = "%s"
                                 ORDER BY Genus""" % family)
 
-    security.declareProtected(view, 'get_species')
-    def get_species(self, genus, dbconn):
+    security.declareProtected(view, 'get_genus')
+    def get_genus(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus
+                                FROM darwin
+                                WHERE darwin.darwin_genus LIKE "%s%%"
+                                ORDER BY Genus LIMIT 100""" % query)
+
+    security.declareProtected(view, 'get_species_by_genus')
+    def get_species_by_genus(self, genus, dbconn):
         """ """
         return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species
                                 FROM darwin
                                 WHERE darwin.darwin_genus = "%s"
                                 ORDER BY Species""" % genus)
+
+    security.declareProtected(view, 'get_species')
+    def get_species(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species
+                                FROM darwin
+                                WHERE darwin.darwin_species LIKE "%s%%"
+                                ORDER BY Species LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_names')
     def get_names(self, query, dbconn):
@@ -234,9 +258,13 @@ class PyDigirSearch(SimpleItem):
         elif type == 'families':
             records = self.get_families(value, dbconn)
         elif type == 'genus':
-            records = self.get_genres(value, dbconn)
+            records = self.get_genus(value, dbconn)
+        elif type == 'genus_by_family':
+            records = self.get_genus_by_family(value, dbconn)
         elif type == 'species':
             records = self.get_species(value, dbconn)
+        elif type == 'species_by_genus':
+            records = self.get_species_by_genus(value, dbconn)
         elif type == 'countries':
             records = self.get_countries(value, dbconn)
         elif type == 'localities':

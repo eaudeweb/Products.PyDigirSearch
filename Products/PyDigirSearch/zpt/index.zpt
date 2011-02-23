@@ -9,7 +9,7 @@
 		<script src="/misc_/PyDigirSearch/search_digir.js"></script>
 		<style>
 		.ui-button { margin-left: -1px; }
-		.ui-button-icon-only .ui-button-text { padding: 0.35em; } 
+		.ui-button-icon-only .ui-button-text { padding: 0.35em; }
 		.ui-autocomplete-input { margin: 0; padding: 0.48em 0 0.47em 0.45em; }
 		</style>
 	</metal:block>
@@ -22,47 +22,33 @@
 			<form class="search-form" title="search_form" action="search" method="post">
 				<div class="field-inline">
 					<label for="InstitutionCode" i18n:translate="">Institution code</label>
-					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
-						<option value="" i18n:translate="">All</option>
-					</select>
+					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring"></select>
 				</div>
 				<div class="field-inline">
 					<label for="CollectionCode" i18n:translate="">Collection</label>
-					<select id="CollectionCode" name="CollectionCode:utf8:ustring">
-						<option value="" i18n:translate="">All</option>
-					</select>
+					<select id="CollectionCode" name="CollectionCode:utf8:ustring"></select>
 				</div>
 				<div class="field-inline">
-					<label for="BasisOfRecord" i18n:translate="">BasisOfRecord</label>
-					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring">
-						<option value="" i18n:translate="">All</option>
-					</select>
+					<label for="BasisOfRecord" i18n:translate="">Basis of Record</label>
+					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring"></select>
 				</div>
 				<hr />
 				<div class="field-inline">
 					<label for="Family" i18n:translate="">Family</label>
-					<select id="Family" name="Family:utf8:ustring">
-						<option value="" i18n:translate="">All</option>
-					</select>
+					<select id="Family" name="Family:utf8:ustring"></select>
 				</div>
 				<div class="field-inline">
 					<label for="Genus" i18n:translate="">Genus</label>
-					<select id="Genus" name="Genus:utf8:ustring" disabled="disabled">
-						<option value="" i18n:translate=""></option>
-					</select>
+					<select id="Genus" name="Genus:utf8:ustring"></select>
 				</div>
 				<div class="field-inline">
 					<label for="Species" i18n:translate="">Species</label>
-					<select id="Species" name="Species:utf8:ustring" disabled="disabled">
-						<option value="" i18n:translate=""></option>
-					</select>
+					<select id="Species" name="Species:utf8:ustring"></select>
 				</div>
 				<hr />
 				<div class="field-inline">
 					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name</label>
-					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring" disabled="disabled">
-						<option value="" i18n:translate=""></option>
-					</select>
+					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring"></select>
 				</div>
 				<div class="field-inline">
 					<label for="Country" i18n:translate="">Country</label>
@@ -72,12 +58,11 @@
 				</div>
 				<div class="field-inline">
 					<label for="Locality" i18n:translate="">Locality</label>
-					<select id="Locality" name="Locality:utf8:ustring" disabled="disabled">
-						<option value="" i18n:translate=""></option>
-					</select>
+					<select id="Locality" name="Locality:utf8:ustring"></select>
 				</div>
 				<div class="field">
 					<input class="submit" type="submit" name="search" value="Search" i18n:attributes="value" />
+					<input class="submit" type="reset" value="Reset" i18n:attributes="value" />
 				</div>
 			</form>
 			<tal:block define="dummy dbconn/close" />
