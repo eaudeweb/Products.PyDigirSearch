@@ -116,10 +116,13 @@ $.widget("ui.combobox", {
 var family_el = $('#Family');
 var genus_el = $('#Genus');
 var species_el = $('#Species');
-var names_el = $('#ScientificName');
+var names_el = $('#ScientificNameAuthor');
 var locality_el = $('#Locality');
 var institution_el = $('#InstitutionCode');
 var collection_el = $('#CollectionCode');
+var basisofrecord_el = $('#BasisOfRecord');
+var country_el = $('#Country');
+
 
 function handle_source(type, request, response){
 	$.getJSON("get_json", {'type': type, 'value': request.term}, function(data){
@@ -144,6 +147,12 @@ institution_el.combobox({
 collection_el.combobox({
 	source: function(request, response){
 		handle_source('collections', request, response);
+	}
+});
+
+basisofrecord_el.combobox({
+	source: function(request, response){
+		handle_source('basisofrecords', request, response);
 	}
 });
 
@@ -195,6 +204,12 @@ species_el.combobox();
 names_el.combobox({
 	source: function(request, response){
 		handle_source('names', request, response);
+	},
+});
+
+country_el.combobox({
+	source: function(request, response){
+		handle_source('countries', request, response);
 	},
 });
 

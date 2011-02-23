@@ -32,17 +32,12 @@
 						<option value="" i18n:translate="">All</option>
 					</select>
 				</div>
-				<!-- <div class="field-inline" tal:define="records python:here.get_basisofrecords(dbconn)">
+				<div class="field-inline">
 					<label for="BasisOfRecord" i18n:translate="">BasisOfRecord</label>
 					<select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring">
 						<option value="" i18n:translate="">All</option>
-						<tal:block repeat="record records">
-							<option tal:attributes="value record/BasisOfRecord;
-													selected request/SESSION/BasisOfRecord|nothing"
-									tal:content="record/BasisOfRecord"/>
-						</tal:block>
 					</select>
-				</div> -->
+				</div>
 				<hr />
 				<div class="field-inline">
 					<label for="Family" i18n:translate="">Family</label>
@@ -64,20 +59,17 @@
 				</div>
 				<hr />
 				<div class="field-inline">
-					<label for="ScientificName" i18n:translate="">Scientific Name</label>
-					<select id="ScientificName" name="ScientificName:utf8:ustring" disabled="disabled">
+					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name</label>
+					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring" disabled="disabled">
 						<option value="" i18n:translate=""></option>
 					</select>
 				</div>
-				<!-- <div class="field-inline" tal:define="records python:here.get_countries(dbconn)">
+				<div class="field-inline">
 					<label for="Country" i18n:translate="">Country</label>
 					<select id="Country" name="Country:utf8:ustring">
 						<option value="" i18n:translate="">All</option>
-						<tal:block repeat="record records">
-							<option tal:attributes="value record/Country" tal:content="record/Country"/>
-						</tal:block>
 					</select>
-				</div> -->
+				</div>
 				<div class="field-inline">
 					<label for="Locality" i18n:translate="">Locality</label>
 					<select id="Locality" name="Locality:utf8:ustring" disabled="disabled">

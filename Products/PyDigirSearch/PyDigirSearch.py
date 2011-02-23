@@ -31,13 +31,12 @@ items_per_page = 10
 QUERY_TERMS = {
     'InstitutionCode': 'equals',
     'CollectionCode': 'equals',
-    'BasisOfRecord': 'equals',
+    # 'BasisOfRecord': 'equals',
     'Family': 'equals',
     'Genus': 'like',
     'Species': 'like',
-    'ScientificNameAuthor': 'like',
-    'ContinentOcean': 'equals',
-    'Country': 'equals',
+    'ScientificName': 'like',
+    # 'Country': 'equals',
     'Locality': 'like',
     }
 
@@ -157,13 +156,21 @@ class PyDigirSearch(SimpleItem):
                                 WHERE darwin.darwin_collectioncode LIKE "%s%%"
                                 ORDER BY CollectionCode LIMIT 100""" % query)
 
-    security.declareProtected(view, 'get_families')
-    def get_families(self, query, dbconn):
+    security.declareProtected(view, 'get_countries')
+    def get_countries(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_family AS Family
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_country AS Country
                                 FROM darwin
-                                WHERE darwin.darwin_family LIKE "%s%%"
-                                ORDER BY Family LIMIT 100""" % query)
+                                WHERE darwin.darwin_country LIKE "%s%%"
+                                ORDER BY Country LIMIT 100""" % query)
+
+    security.declareProtected(view, 'get_basisofrecords')
+    def get_basisofrecords(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_basisofrecord AS BasisOfRecord
+                                FROM darwin
+                                WHERE darwin.darwin_basisofrecord LIKE "%s%%"
+                                ORDER BY BasisOfRecord""" % query)
 
     security.declareProtected(view, 'get_genres')
     def get_genres(self, family, dbconn):
@@ -184,10 +191,18 @@ class PyDigirSearch(SimpleItem):
     security.declareProtected(view, 'get_names')
     def get_names(self, query, dbconn):
         """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificname AS ScientificName
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificnameauthor AS ScientificNameAuthor
                                 FROM darwin
-                                WHERE darwin.darwin_scientificname LIKE "%s%%"
-                                ORDER BY ScientificName LIMIT 100""" % query)
+                                WHERE darwin.darwin_scientificnameauthor LIKE "%s%%"
+                                ORDER BY ScientificNameAuthor LIMIT 100""" % query)
+
+    security.declareProtected(view, 'get_countries')
+    def get_countries(self, query, dbconn):
+        """ """
+        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_country AS Country
+                                FROM darwin
+                                WHERE darwin.darwin_country LIKE "%s%%"
+                                ORDER BY Country LIMIT 100""" % query)
 
     security.declareProtected(view, 'get_localities')
     def get_localities(self, query, dbconn):
@@ -210,20 +225,24 @@ class PyDigirSearch(SimpleItem):
         dbconn = self.open_dbconnection()
 
         records = {}
-        if type == 'families':
+        if type == 'institutions':
+            records = self.get_institutions(value, dbconn)
+        elif type == 'collections':
+            records = self.get_collections(value, dbconn)
+        elif type == 'basisofrecords':
+            records = self.get_basisofrecords(value, dbconn)
+        elif type == 'families':
             records = self.get_families(value, dbconn)
         elif type == 'genus':
             records = self.get_genres(value, dbconn)
         elif type == 'species':
             records = self.get_species(value, dbconn)
+        elif type == 'countries':
+            records = self.get_countries(value, dbconn)
         elif type == 'localities':
             records = self.get_localities(value, dbconn)
         elif type == 'names':
             records = self.get_names(value, dbconn)
-        elif type == 'institutions':
-            records = self.get_institutions(value, dbconn)
-        elif type == 'collections':
-            records = self.get_collections(value, dbconn)
         dbconn.close()
         return json.dumps(records)
 
@@ -291,7 +310,7 @@ class PyDigirSearch(SimpleItem):
                 ORDER BY %s %s LIMIT %s OFFSET %s""" % (sql_condition, sort_on, sort_order, items_per_page, start)
         records = dbconn.query(sql)
 
-        sql = u"""SELECT count(*) AS counter
+        sql = u"""SELECT count(record.record_id) AS counter
                 FROM record
                 INNER JOIN document ON record.document_id = document.document_id
                 INNER JOIN folder ON document.folder_id = folder.folder_id
