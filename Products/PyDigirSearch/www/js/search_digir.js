@@ -9,7 +9,7 @@ $.widget("ui.combobox", {
 			ui.item.option.selected = true;
 			//Set value to the select
 			var select = $('#' + $(this).attr('target'));
-			if(select.find("[value="+ ui.item.value+"]")){
+			if(select.find("[value="+ ui.item.value +"]")){
 				select.append($("<option>").val(ui.item.value));
 			}
 			select.val(ui.item.value).trigger("change");
@@ -19,14 +19,16 @@ $.widget("ui.combobox", {
 			var select = $('#' + self.attr('target'));
 
 			if (!ui.item) {
-				var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex($(this).val()) + "$", "i"),
+				var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex(self.val()) + "$", "i"),
 					valid = false;
+
 				select.children("option").each(function() {
 					if ($(this).text().match(matcher)) {
 						this.selected = valid = true;
 						return false;
 					}
 				});
+
 				if (!valid) {
 					// remove invalid value, as it didn't match anything
 					$(this).val("");
@@ -43,7 +45,6 @@ $.widget("ui.combobox", {
 			selected = select.children(":selected"),
 			value = selected.val() ? selected.text() : "";
 
-		console.log(value);
 		var input = this.input = $("<input>")
 			.insertAfter(select)
 			.attr("target", select.attr('id'))
