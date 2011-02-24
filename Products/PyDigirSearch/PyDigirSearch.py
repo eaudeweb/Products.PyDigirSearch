@@ -119,8 +119,10 @@ class PyDigirSearch(SimpleItem):
         """ """
         dbconn = self.open_dbconnection()
 
-        for qt in QUERY_TERMS.keys():
-            self.setSession(qt, REQUEST.get(qt, REQUEST.SESSION.get(qt)))
+        if REQUEST.REQUEST_METHOD == 'POST':
+            REQUEST.SESSION.clear()
+            for qt in QUERY_TERMS.keys():
+                self.setSession(qt, REQUEST.get(qt))
 
         institutions, collections = self.get_metadata(dbconn, REQUEST)
         dbconn.close()
@@ -131,9 +133,6 @@ class PyDigirSearch(SimpleItem):
     def search(self, REQUEST):
         """ """
         dbconn = self.open_dbconnection()
-
-        # for qt in QUERY_TERMS.keys():
-        #     self.setSession(qt, REQUEST.get(qt, REQUEST.SESSION.get(qt)))
 
         records, match_count = self.search_database(dbconn, REQUEST)
         dbconn.close()
