@@ -34,12 +34,12 @@ items_per_page = 10
 QUERY_TERMS = {
     'InstitutionCode': 'equals',
     'CollectionCode': 'equals',
-    # 'BasisOfRecord': 'equals',
+    'BasisOfRecord': 'equals',
     'Family': 'equals',
     'Genus': 'like',
     'Species': 'like',
-    'ScientificName': 'like',
-    # 'Country': 'equals',
+    'ScientificNameAuthor': 'like',
+    'Country': 'equals',
     'Locality': 'like',
     }
 
@@ -73,6 +73,10 @@ class PyDigirSearch(SimpleItem):
 
     security.declareProtected(view, 'index_html')
     index_html = PageTemplateFile('zpt/index', globals())
+
+    security.declareProtected(view, 'metadata_html')
+    metadata_html = PageTemplateFile('zpt/metadata', globals())
+
     security.declareProtected(view, 'results_html')
     results_html = PageTemplateFile('zpt/results', globals())
 
@@ -110,13 +114,26 @@ class PyDigirSearch(SimpleItem):
                   self.mysql_connection['user'], self.mysql_connection['pass'])
         return conn
 
-    security.declareProtected(view, 'search')
-    def search(self, REQUEST):
+    security.declareProtected(view, 'metadata')
+    def metadata(self, REQUEST):
         """ """
         dbconn = self.open_dbconnection()
 
         for qt in QUERY_TERMS.keys():
             self.setSession(qt, REQUEST.get(qt, REQUEST.SESSION.get(qt)))
+
+        institutions, collections = self.get_metadata(dbconn, REQUEST)
+        dbconn.close()
+
+        return self.metadata_html(REQUEST, institutions=institutions, collections=collections)
+
+    security.declareProtected(view, 'search')
+    def search(self, REQUEST):
+        """ """
+        dbconn = self.open_dbconnection()
+
+        # for qt in QUERY_TERMS.keys():
+        #     self.setSession(qt, REQUEST.get(qt, REQUEST.SESSION.get(qt)))
 
         records, match_count = self.search_database(dbconn, REQUEST)
         dbconn.close()
@@ -308,6 +325,12 @@ class PyDigirSearch(SimpleItem):
             if query_terms.index(qt) < len(query_terms)-1:
                 sql_condition += u" AND "
 
+        if request.has_key('institution') and 'InstitutionCode' not in query_terms:
+            sql_condition += u" AND darwin.darwin_institutioncode = '%s'" % request.get('institution')
+
+        if request.has_key('collection') and 'CollectionCode' not in query_terms:
+            sql_condition += u" AND darwin.darwin_collectioncode = '%s'" % request.get('collection')
+
         sql = u"""SELECT darwin.darwin_collectioncode AS CollectionCode,
                         darwin.darwin_institutioncode AS InstitutionCode,
                         darwin.darwin_scientificname AS ScientificName,
@@ -351,5 +374,38 @@ class PyDigirSearch(SimpleItem):
         match_count = dbconn.query(sql)
 
         return records, match_count
+
+    security.declarePrivate('get_metadata')
+    def get_metadata(self, dbconn, request):
+
+        query_terms = [ qt for qt, qv in request.SESSION.items() if qv ]
+        if query_terms:
+            sql_condition = 'WHERE '
+        else:
+            sql_condition = ''
+
+        for qt in query_terms:
+            if QUERY_TERMS[qt] == 'equals':
+                sql_condition += u"%s = '%s'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
+            elif QUERY_TERMS[qt] == 'like':
+                sql_condition += u"%s LIKE '%s%%'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
+            if query_terms.index(qt) < len(query_terms)-1:
+                sql_condition += u" AND "
+
+        sql = u"""SELECT darwin.darwin_collectioncode AS CollectionCode,
+                        darwin.darwin_institutioncode AS InstitutionCode
+                FROM record
+                INNER JOIN document ON record.document_id = document.document_id
+                INNER JOIN folder ON document.folder_id = folder.folder_id
+                INNER JOIN resource ON folder.resource_id = resource.resource_id
+                LEFT JOIN darwin ON record.record_id = darwin.record_id %s
+                GROUP BY CollectionCode, InstitutionCode""" % sql_condition
+
+        institutions = []
+        collections = []
+        for record in dbconn.query(sql):
+            institutions.append(record['InstitutionCode'])
+            collections.append(record['CollectionCode'])
+        return institutions, collections
 
 InitializeClass(PyDigirSearch)

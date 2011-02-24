@@ -19,7 +19,7 @@
 		<div id="center_content" tal:define="dbconn here/open_dbconnection">
 			<h1 i18n:translate="">Search</h1>
 			<p i18n:translate="">Please enter your search criteria.</p>
-			<form class="search-form" title="search_form" action="search" method="post">
+			<form class="search-form" title="search_form" action="metadata" method="post">
 				<div class="field-inline">
 					<label for="InstitutionCode" i18n:translate="">Institution code</label>
 					<select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
