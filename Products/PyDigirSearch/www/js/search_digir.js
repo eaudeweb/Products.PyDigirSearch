@@ -1,3 +1,39 @@
+function options_source(self, request, response){
+	var select = $('#' + self.element.attr('target'));
+	var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+	response(select.children("option").map(function() {
+		var text = $(this).text();
+		if (this.value && (!request.term || matcher.test(text))){
+			return {
+				label: text.replace(
+					new RegExp(
+						"(?![^&;]+;)(?!<[^<>]*)(" +
+						$.ui.autocomplete.escapeRegex(request.term) +
+						")(?![^<>]*>)(?![^&;]+;)", "gi"
+					), "<strong>$1</strong>"),
+				value: text,
+				option: this
+			};
+		}
+	}));
+}
+
+function handle_source(type, request, response){
+	$.getJSON("get_json", {'type': type, 'value': request.term}, function(data){
+		var values = [];
+		$.each(data, function(i, item){
+			for (iterator in item){
+				values.push({
+					label: item[iterator],
+					value: item[iterator],
+					option: this
+				});
+			}
+		});
+		response(values);
+	});
+}
+
 $(document).ready(function(){
 /**
  * A new Jquery ui widget using jquery autocomplete.
@@ -12,7 +48,7 @@ $.widget("ui.combobox", {
 			//Set value to the select
 			var select = $('#' + $(this).attr('target'));
 			// Don't add this option if it's already in select
-			if(select.find("[value="+ ui.item.value +"]").size() == 0){
+			if(select.find("[value="+ ui.item.value +"]").size() === 0){
 				select.append($("<option>").val(ui.item.value));
 			}
 			select.val(ui.item.value).trigger("change");
@@ -36,10 +72,10 @@ $.widget("ui.combobox", {
 					// remove invalid value, as it didn't match anything
 					$(this).val("");
 					select.val("");
-					if (self.attr('target') == 'Family'){
+					if (self.attr('target') === 'Family'){
 						genus_el.empty();
 					}
-					if (self.attr('target') == 'Genus'){
+					if (self.attr('target') === 'Genus'){
 						species_el.empty();
 					}
 					return false;
@@ -49,8 +85,7 @@ $.widget("ui.combobox", {
 	},
 
 	_create: function() {
-		var self = this,
-			select = this.element.hide(),
+		var select = this.element.hide(),
 			selected = select.children(":selected"),
 			value = selected.val() ? selected.text() : "";
 
@@ -61,9 +96,9 @@ $.widget("ui.combobox", {
 			.autocomplete({
 				delay: 300,
 				minLength: 2,
-				source: this.options['source'],
-				select: this.options['select'],
-				change: this.options['change']
+				source: this.options.source,
+				select: this.options.select,
+				change: this.options.change
 			}).addClass("ui-widget ui-widget-content ui-corner-left");
 
 		input.data("autocomplete")._renderItem = function(ul, item) {
@@ -126,7 +161,7 @@ if(family_el.val() !== ''){
 		$.each(data, function(){
 			var val = this.Genus;
 			// Don't add this option if it's already in select
-			if (genus_el.find("[value="+ val +"]").size() == 0){
+			if (genus_el.find("[value="+ val +"]").size() === 0){
 				genus_el.append($("<option>").val(val).text(val));
 			}
 		});
@@ -154,7 +189,7 @@ family_el.combobox({
 				  'value': ui.item.value}, function(data){
 			$.each(data, function(){
 				var val = this.Genus;
-				if (genus_el.find("[val="+ val +"]").size() == 0){
+				if (genus_el.find("[val="+ val +"]").size() === 0){
 					genus_el.append($("<option>").val(val).text(val));
 				}
 			});
@@ -173,7 +208,7 @@ if(genus_el.val() !== ''){
 		$.each(data, function(){
 			var val = this.Species;
 			// Don't add this option if it's already in select
-			if (species_el.find("[value="+ val +"]").size() == 0){
+			if (species_el.find("[value="+ val +"]").size() === 0){
 				species_el.append($("<option>").val(val).text(val));
 			}
 		});
@@ -195,7 +230,7 @@ genus_el.combobox({
 				  function(data){
 			$.each(data, function(){
 				var val = this.Species;
-				if (species_el.find("[value="+ val +"]").size() == 0){
+				if (species_el.find("[value="+ val +"]").size() === 0){
 					species_el.append($("<option>").val(val).text(val));
 				}
 			});
@@ -214,7 +249,7 @@ species_el.combobox({
 		}else{
 			handle_source('species', request, response);
 		}
-	},
+	}
 });
 
 institution_el.combobox({
@@ -238,19 +273,19 @@ basisofrecord_el.combobox({
 names_el.combobox({
 	source: function(request, response){
 		handle_source('names', request, response);
-	},
+	}
 });
 
 country_el.combobox({
 	source: function(request, response){
 		handle_source('countries', request, response);
-	},
+	}
 });
 
 locality_el.combobox({
 	source: function(request, response){
 		handle_source('localities', request, response);
-	},
+	}
 });
 
 
@@ -258,37 +293,3 @@ $("#reset-button").click(function(){
 	$("select").empty();
 });
 });
-
-function options_source(self, request, response){
-	var select = $('#' + self.element.attr('target'));
-	var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
-	response(select.children("option").map(function() {
-		var text = $(this).text();
-		if (this.value && (!request.term || matcher.test(text))){
-			return {
-				label: text.replace(
-					new RegExp(
-						"(?![^&;]+;)(?!<[^<>]*)(" +
-						$.ui.autocomplete.escapeRegex(request.term) +
-						")(?![^<>]*>)(?![^&;]+;)", "gi"
-					), "<strong>$1</strong>"),
-				value: text,
-				option: this
-			}
-		}
-	}));
-}
-
-function handle_source(type, request, response){
-	$.getJSON("get_json", {'type': type, 'value': request.term}, function(data){
-		response(data.map(function(item) {
-			for (i in item){
-				return {
-					label: item[i],
-					value: item[i],
-					option: this
-				}
-			}
-		}));
-	});
-}
