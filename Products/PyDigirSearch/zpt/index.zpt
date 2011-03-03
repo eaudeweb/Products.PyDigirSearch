@@ -71,7 +71,7 @@
 				</div>
 				<hr />
 				<div class="field-inline">
-					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name</label>
+					<label for="ScientificNameAuthor" i18n:translate="">Scientific Name Author</label>
 					<select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring">
 						<tal:block condition="python: request.SESSION.get('ScientificNameAuthor')">
 							<option tal:attributes="value request/SESSION/ScientificNameAuthor" tal:content="request/SESSION/ScientificNameAuthor" selected="selected"></option>
@@ -93,6 +93,10 @@
 							<option tal:attributes="value request/SESSION/Locality" tal:content="request/SESSION/Locality" selected="selected"></option>
 						</tal:block>
 					</select>
+				</div>
+				<div class="field-inline">
+					<label for="CollectionDateStart" i18n:translate="">CollectionDateInterval</label>
+					<input type="text" id="CollectionDateStart" name="CollectionDateStart:utf8:ustring" /> - <input type="text" id="CollectionDateEnd" name="CollectionDateEnd:utf8:ustring" />
 				</div>
 				<div class="field">
 					<input class="submit" type="submit" name="search" value="Search" i18n:attributes="value" />

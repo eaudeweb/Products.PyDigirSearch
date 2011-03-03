@@ -122,11 +122,14 @@ class PyDigirSearch(SimpleItem):
         if REQUEST.REQUEST_METHOD == 'POST':
             REQUEST.SESSION.clear()
             for qt in QUERY_TERMS.keys():
-                self.setSession(qt, REQUEST.get(qt))
+                if REQUEST.get(qt):
+                    self.setSession(qt, REQUEST.get(qt))
 
         institutions, collections = self.get_metadata(dbconn, REQUEST)
         dbconn.close()
 
+        institutions.sort()
+        collections.sort()
         return self.metadata_html(REQUEST, institutions=institutions, collections=collections)
 
     security.declareProtected(view, 'search')
@@ -254,13 +257,6 @@ class PyDigirSearch(SimpleItem):
                                 FROM darwin
                                 WHERE darwin.darwin_locality LIKE "%s%%"
                                 ORDER BY Locality LIMIT 100""" % query)
-
-    def test_sql(self):
-        """ """
-        sql = u"""select darwin_locality from darwin where darwin_collectioncode = 'Baraniak'"""
-        dbconn = self.open_dbconnection()
-        res = dbconn.query(sql)
-        return res[0]['darwin_locality']
 
     security.declareProtected(view, 'get_json')
     def get_json(self, REQUEST=None, type='families', value=None):
@@ -400,11 +396,11 @@ class PyDigirSearch(SimpleItem):
                 LEFT JOIN darwin ON record.record_id = darwin.record_id %s
                 GROUP BY CollectionCode, InstitutionCode""" % sql_condition
 
-        institutions = []
-        collections = []
+        institutions = {}
+        collections = {}
         for record in dbconn.query(sql):
-            institutions.append(record['InstitutionCode'])
-            collections.append(record['CollectionCode'])
-        return institutions, collections
+            institutions.setdefault(record['InstitutionCode'], None)
+            collections.setdefault(record['CollectionCode'], None)
+        return institutions.keys(), collections.keys()
 
 InitializeClass(PyDigirSearch)

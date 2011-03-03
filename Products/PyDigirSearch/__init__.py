@@ -11,6 +11,7 @@ def initialize(context):
         constructors = (
             PyDigirSearch.manage_add_html,
             PyDigirSearch.manage_add_search),
+        icon = 'www/meta_type.png'
     )
 
 misc_ = {
