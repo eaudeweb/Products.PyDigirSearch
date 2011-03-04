@@ -4,6 +4,9 @@ try:
 except ImportError:
     import simplejson as json
 
+from datetime import datetime
+import time
+
 from OFS.SimpleItem import SimpleItem
 from App.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
@@ -114,6 +117,9 @@ class PyDigirSearch(SimpleItem):
                   self.mysql_connection['user'], self.mysql_connection['pass'])
         return conn
 
+    def str2date(self, date_string):
+        return datetime(*(time.strptime(date_string, '%d/%m/%Y')[0:3]))
+
     security.declareProtected(view, 'metadata')
     def metadata(self, REQUEST):
         """ """
@@ -124,6 +130,16 @@ class PyDigirSearch(SimpleItem):
             for qt in QUERY_TERMS.keys():
                 if REQUEST.get(qt):
                     self.setSession(qt, REQUEST.get(qt))
+
+            if REQUEST.get('CollectionDateStart'):
+                self.setSession('StartDate', self.str2date(REQUEST.get('CollectionDateStart')))
+                self.setSession('CollectionDateStart', REQUEST.get('CollectionDateStart'))
+            if REQUEST.get('CollectionDateEnd'):
+                self.setSession('EndDate', self.str2date(REQUEST.get('CollectionDateEnd')))
+                self.setSession('CollectionDateEnd', REQUEST.get('CollectionDateEnd'))
+            if REQUEST.get('AllResults'):
+                self.setSession('AllResults', REQUEST.get('AllResults'))
+
 
         institutions, collections = self.get_metadata(dbconn, REQUEST)
         dbconn.close()
@@ -306,7 +322,7 @@ class PyDigirSearch(SimpleItem):
             page = 1
         start = (page-1)*items_per_page
 
-        query_terms = [ qt for qt, qv in request.SESSION.items() if qv ]
+        query_terms = [ qt for qt, qv in request.SESSION.items() if qv and qt in QUERY_TERMS]
         if query_terms:
             sql_condition = 'WHERE '
         else:
@@ -319,6 +335,39 @@ class PyDigirSearch(SimpleItem):
                 sql_condition += u"%s LIKE '%s%%'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
             if query_terms.index(qt) < len(query_terms)-1:
                 sql_condition += u" AND "
+
+        start_date = request.SESSION.get('StartDate', None)
+        end_date = request.SESSION.get('StartEnd', None)
+
+        if start_date:
+            if sql_condition == '':
+                sql_condition = u"WHERE "
+            else:
+                sql_condition += u" AND "
+
+            if request.SESSION.get('AllResults', None):
+                sql_condition += u"""(darwin.darwin_yearcollected >= %s or darwin.darwin_yearcollected is NULL) 
+                                    AND (darwin.darwin_monthcollected >= %s or darwin.darwin_monthcollected is NULL) 
+                                    AND (darwin.darwin_daycollected >= %s or darwin.darwin_daycollected is NULL) """ % \
+                                    (start_date.year, start_date.month, start_date.day)
+            else:
+                sql_condition += u"""darwin.darwin_yearcollected >= %s AND darwin.darwin_monthcollected >= %s AND darwin.darwin_daycollected >= %s""" % \
+                                    (start_date.year, start_date.month, start_date.day)
+
+        if end_date:
+            if sql_condition == '':
+                sql_condition = u"WHERE "
+            else:
+                sql_condition += u" AND "
+
+            if request.SESSION.get('AllResults', None):
+                sql_condition += u"""(darwin.darwin_yearcollected <= %s or darwin.darwin_yearcollected is NULL) 
+                                    AND (darwin.darwin_monthcollected <= %s or darwin.darwin_monthcollected is NULL) 
+                                    AND (darwin.darwin_daycollected <= %s or darwin.darwin_daycollected is NULL) """ % \
+                                    (end_date.year, end_date.month, end_date.day)
+            else:
+                sql_condition += u"""darwin.darwin_yearcollected <= %s AND darwin.darwin_monthcollected <= %s AND darwin.darwin_daycollected <= %s""" % \
+                                    (end_date.year, end_date.month, end_date.day)
 
         if request.has_key('institution') and 'InstitutionCode' not in query_terms:
             sql_condition += u" AND darwin.darwin_institutioncode = '%s'" % request.get('institution')
@@ -358,6 +407,7 @@ class PyDigirSearch(SimpleItem):
                 INNER JOIN resource ON folder.resource_id = resource.resource_id
                 LEFT JOIN darwin ON record.record_id = darwin.record_id %s
                 ORDER BY %s %s LIMIT %s OFFSET %s""" % (sql_condition, sort_on, sort_order, items_per_page, start)
+
         records = dbconn.query(sql)
 
         sql = u"""SELECT count(record.record_id) AS counter
@@ -373,7 +423,7 @@ class PyDigirSearch(SimpleItem):
     security.declarePrivate('get_metadata')
     def get_metadata(self, dbconn, request):
 
-        query_terms = [ qt for qt, qv in request.SESSION.items() if qv ]
+        query_terms = [ qt for qt, qv in request.SESSION.items() if qv and qt in QUERY_TERMS]
         if query_terms:
             sql_condition = 'WHERE '
         else:
@@ -386,6 +436,39 @@ class PyDigirSearch(SimpleItem):
                 sql_condition += u"%s LIKE '%s%%'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
             if query_terms.index(qt) < len(query_terms)-1:
                 sql_condition += u" AND "
+
+        start_date = request.SESSION.get('StartDate', None)
+        end_date = request.SESSION.get('StartEnd', None)
+
+        if start_date:
+            if sql_condition == '':
+                sql_condition = u"WHERE "
+            else:
+                sql_condition += u" AND "
+
+            if request.SESSION.get('AllResults', None):
+                sql_condition += u"""(darwin.darwin_yearcollected >= %s or darwin.darwin_yearcollected is NULL) 
+                                    AND (darwin.darwin_monthcollected >= %s or darwin.darwin_monthcollected is NULL) 
+                                    AND (darwin.darwin_daycollected >= %s or darwin.darwin_daycollected is NULL) """ % \
+                                    (start_date.year, start_date.month, start_date.day)
+            else:
+                sql_condition += u"""darwin.darwin_yearcollected >= %s AND darwin.darwin_monthcollected >= %s AND darwin.darwin_daycollected >= %s""" % \
+                                    (start_date.year, start_date.month, start_date.day)
+
+        if end_date:
+            if sql_condition == '':
+                sql_condition = u"WHERE "
+            else:
+                sql_condition += u" AND "
+
+            if request.SESSION.get('AllResults', None):
+                sql_condition += u"""(darwin.darwin_yearcollected <= %s or darwin.darwin_yearcollected is NULL) 
+                                    AND (darwin.darwin_monthcollected <= %s or darwin.darwin_monthcollected is NULL) 
+                                    AND (darwin.darwin_daycollected <= %s or darwin.darwin_daycollected is NULL) """ % \
+                                    (end_date.year, end_date.month, end_date.day)
+            else:
+                sql_condition += u"""darwin.darwin_yearcollected <= %s AND darwin.darwin_monthcollected <= %s AND darwin.darwin_daycollected <= %s""" % \
+                                    (end_date.year, end_date.month, end_date.day)
 
         sql = u"""SELECT darwin.darwin_collectioncode AS CollectionCode,
                         darwin.darwin_institutioncode AS InstitutionCode

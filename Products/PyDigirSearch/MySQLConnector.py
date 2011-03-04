@@ -9,7 +9,7 @@ class MySQLConnector:
         """
         Open database connection. In case of errors exceptions are thrown.
         """
-        self._db = MySQLdb.connect(host, user, passwd, db, port, connect_timeout = 30, init_command='SET NAMES utf8')
+        self._db = MySQLdb.connect(host, user, passwd, db, port, connect_timeout = 30, charset='utf8')
 
     def close(self):
         """

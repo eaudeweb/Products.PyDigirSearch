@@ -15,10 +15,10 @@
 	</metal:block>
 
 	<metal:block fill-slot="body">
-		<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
-		<div id="center_content" tal:define="dbconn here/open_dbconnection">
-			<h1 i18n:translate="">Search</h1>
-			<p i18n:translate="">Please enter your search criteria.</p>
+	<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
+	<div id="center_content" tal:define="dbconn here/open_dbconnection">
+		<h1 i18n:translate="">Search</h1>
+		<p i18n:translate="">Please enter your search criteria.</p>
       <form class="search-form" title="search_form" action="metadata" method="post">
         <table>
           <tr class="field-inline">
@@ -156,8 +156,15 @@
               <label for="CollectionDateStart" i18n:translate="">Collection Date Interval</label>
             </td>
             <td>
-              <input type="text" id="CollectionDateStart" name="CollectionDateStart:utf8:ustring" /> -
-              <input type="text" id="CollectionDateEnd" name="CollectionDateEnd:utf8:ustring" />
+              <input type="text" id="CollectionDateStart" name="CollectionDateStart:utf8:ustring" tal:attributes="value request/SESSION/CollectionDateStart |nothing" /> -
+              <input type="text" id="CollectionDateEnd" name="CollectionDateEnd:utf8:ustring" tal:attributes="value request/SESSION/CollectionDateEnd |nothing" />
+            </td>
+          </tr>
+          <tr class="field-inline">
+            <td>&nbsp;</td>
+            <td>
+              <input type="checkbox" name="AllResults:utf8:ustring" tal:attributes="checked request/SESSION/AllResults|nothing" />
+              <label for="AllResults" i18n:translate="">Include null values</label>
             </td>
           </tr>
           <tr class="field buttons">
@@ -168,8 +175,8 @@
           </tr>
         </table>
       </form>
-			<tal:block define="dummy dbconn/close" />
-		</div>
+	<tal:block define="dummy dbconn/close" />
+	</div>
     
     <script type="text/javascript">
     $(document).ready(function(){
@@ -180,7 +187,8 @@
         selectOtherMonths: true,
         showWeek: true,
         firstDay: 1,
-        showAnim: 'fadeIn'
+        showAnim: 'fadeIn',
+        dateFormat: 'dd/mm/yy'
       });
     });
     </script>
