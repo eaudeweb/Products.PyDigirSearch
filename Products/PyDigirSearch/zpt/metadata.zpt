@@ -12,29 +12,41 @@
 		<div id="center_content">
 			<h1 i18n:translate="">Metadata</h1>
 			<p>
-				<a tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="">New search</a>
-				|
-				<a tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a>
+				<a class="link-button" tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="">New search</a>
+				<a class="link-button" tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a>
 			</p>
 			<p i18n:translate="">You can filter the results by:</p>
-			<p i18n:translate="">Organisations</p>
-			<ul>
-				<tal:block repeat="institution options/institutions">
-				<li>
-					<a tal:attributes="href string:${here/absolute_url}/search?institution=${institution}" 
-						tal:content="institution" />
-				</li>
-				</tal:block>
-			</ul>
-			<p i18n:translate="">Collections</p>
-			<ul>
-				<tal:block repeat="collection options/collections">
-				<li>
-					<a tal:attributes="href string:${here/absolute_url}/search?collection=${collection}" 
-						tal:content="collection" />
-				</li>
-				</tal:block>
-			</ul>
+      
+      <fieldset class="results-fieldset">
+        <legend class="results-filter" i18n:translate="">
+          Organisations
+        </legend>
+        
+        <ul class="results-list">
+          <tal:block repeat="institution options/institutions">
+          <li>
+            <a tal:attributes="href string:${here/absolute_url}/search?institution=${institution}" 
+              tal:content="institution" />
+          </li>
+          </tal:block>
+        </ul>
+      </fieldset>
+      
+      <fieldset class="results-fieldset">
+        <legend class="results-filter" i18n:translate="">
+          Collections
+        </legend>
+        
+        <ul class="results-list">
+          <tal:block repeat="collection options/collections">
+          <li>
+            <a tal:attributes="href string:${here/absolute_url}/search?collection=${collection}" 
+              tal:content="collection" />
+          </li>
+          </tal:block>
+        </ul>
+      </fieldset>
+      
 			or you can see <a tal:attributes="href string:${here/absolute_url}/search" i18n:translate="">all results</a>
 		</div>
 	</metal:block>

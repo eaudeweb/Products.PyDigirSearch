@@ -11,10 +11,12 @@ Products/PyDigirSearch/MySQLConnector.py
 Products/PyDigirSearch/PyDigirSearch.py
 Products/PyDigirSearch/__init__.py
 Products/PyDigirSearch/www/arrows.gif
+Products/PyDigirSearch/www/meta_type.png
 Products/PyDigirSearch/www/s.gif
 Products/PyDigirSearch/www/css/digir_search_style.css
 Products/PyDigirSearch/www/js/search_digir.js
 Products/PyDigirSearch/zpt/PyDigirSearch_manage_edit.zpt
 Products/PyDigirSearch/zpt/index.zpt
 Products/PyDigirSearch/zpt/manage_add.zpt
+Products/PyDigirSearch/zpt/metadata.zpt
 Products/PyDigirSearch/zpt/results.zpt

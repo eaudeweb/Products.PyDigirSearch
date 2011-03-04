@@ -1,5 +1,4 @@
 <metal:block i18n:domain="portal_translations" metal:use-macro="here/standard_template_macro">
-
 	<metal:block metal:fill-slot="title">
 			<title tal:content="string:${here/title} | ${here/site_title}" />
 	</metal:block>
@@ -66,14 +65,13 @@
 					">
 			<h1 i18n:translate="">Search results</h1>
 			<p>
-				<a tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="">New search</a>
-				|
-				<a tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a>
+				<a tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="" class="link-button">New search</a>
+				<a tal:attributes="href string:${here/absolute_url}" i18n:translate="" class="link-button">Modify search</a>
 			</p>
 			<p tal:condition="not:options" i18n:translate="">No records matching your search criteria.</p>
-			<table style="width:770px;" class="datatable search-results-table" tal:condition="options">
+			<table style="width: 100%;" class="datatable search-results-table" tal:condition="options">
 				<tr>
-					<th style="width:10em;">
+					<th style="width: 200px; text-align: center !important;">
 						<tal:block condition="python:skey=='CollectionCode'">
 							<a i18n:translate=""
 								tal:attributes="href string:${here/absolute_url}/search?skey=CollectionCode_r">Collection</a>
@@ -179,63 +177,83 @@
 						style="display:none" class="toggle_off">
 						<td colspan="7">
 							<div class="PyDigir_collection_details">
-							<table class="datatable">
-								<tr>
-									<th i18n:translate="">Collection number</th>
-									<td tal:content="record/CollectionCode"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Country</th>
-									<td tal:content="record/Country"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">County</th>
-									<td tal:content="record/County"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Locality</th>
-									<td tal:content="record/Locality"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Latitude</th>
-									<td tal:attributes="id string:lat_${repeat/record/index}" tal:content="record/Latitude"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Longitude</th>
-									<td tal:attributes="id string:lon_${repeat/record/index}" tal:content="record/Longitude"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Date collected</th>
-									<td tal:content="string:${record/YearCollected}/${record/MonthCollected}/${record/DayCollected}"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Family</th>
-									<td tal:content="record/Family"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Genus</th>
-									<td tal:content="record/Genus"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Species</th>
-									<td tal:content="record/Species"/>
-								</tr>
-								<tr>
-									<th i18n:translate="">Notes</th>
-									<td tal:content="record/Notes"/>
-								</tr>
-							</table>
-							</div>
-							<div class="PyDigirMapContainer">
-								<div class="PyDigirMap" tal:attributes="id string:minimap_${repeat/record/index}">
-								<p i18n:translate="">No coordinates</p>
-							</div>
-								<div class="PyDigirClose">
-									<p>
-										<a href="javascript:void(0);" i18n:translate=""
-										tal:attributes="onclick string:javascript:toggle('${repeat/record/index}')">Close</a>
-									</p>
-								</div>
+                <table>
+                  <tr >
+                    <td style="vertical-align: top !important; width: 300px;">
+                      <span class="collection-details">
+                        <strong i18n:translate="">Collection number:</strong>
+                        <span tal:content="record/CollectionCode" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Country:</strong>
+                        <span tal:content="record/Country" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">County:</strong>
+                        <span tal:content="record/County" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Locality:</strong>
+                        <span tal:attributes="id string:lat_${repeat/record/index}" tal:content="record/Latitude" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Latitude:</strong>
+                        <span tal:attributes="id string:lat_${repeat/record/index}" tal:content="record/Latitude" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Longitude:</strong>
+                        <span tal:attributes="id string:lon_${repeat/record/index}" tal:content="record/Longitude" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Date collected:</strong>
+                        <span tal:content="string:${record/YearCollected}/${record/MonthCollected}/${record/DayCollected}" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Family:</strong>
+                        <span tal:content="record/Family" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Genus:</strong>
+                        <span tal:content="record/Genus" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Species:</strong>
+                        <span tal:content="record/Species" />
+                      </span>
+                      
+                      <span class="collection-details">
+                        <strong i18n:translate="">Notes:</strong>
+                        <span tal:content="record/Notes" />
+                      </span>
+                      
+                      <div class="clear">&nbsp;</div>
+                      
+                      <div class="PyDigirClose">
+                        <p>
+                          <a href="javascript:void(0);" i18n:translate=""
+                          tal:attributes="onclick string:javascript:toggle('${repeat/record/index}')" class="link-button">Close</a>
+                        </p>
+                      </div>
+                    </td>
+                    
+                    <td style="vertical-align: top !important;">
+                      <div class="PyDigirMapContainer">
+                        <div class="PyDigirMap" tal:attributes="id string:minimap_${repeat/record/index}">
+                          <p i18n:translate="">No coordinates</p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
 							</div>
 						</td>
 					</tr>
