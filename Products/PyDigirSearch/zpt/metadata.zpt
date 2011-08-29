@@ -1,61 +1,69 @@
 <metal:block i18n:domain="portal_translations" metal:use-macro="here/standard_template_macro">
 
-	<metal:block metal:fill-slot="title">
-			<title tal:content="string:${here/title} | ${here/site_title}" />
-	</metal:block>
+  <metal:block metal:fill-slot="title">
+      <title tal:content="string:${here/title} | ${here/site_title}" />
+  </metal:block>
 
-	<metal:block metal:fill-slot="head">
-		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
-	</metal:block>
+  <metal:block metal:fill-slot="head">
+    <link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
+  </metal:block>
 
-	<metal:block fill-slot="body">
-		<div id="center_content" tal:define="institutions options/institutions;
-		 									collections options/collections">
-			<h1 i18n:translate="">Metadata</h1>
-			<p>
-				<a class="link-button" tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="">New search</a>
-				<a class="link-button" tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a>
-			</p>
-			<tal:block condition="python:institutions or collections">
-			<p i18n:translate="">You can filter the results by:</p>
-      
-	      <fieldset class="results-fieldset">
-	        <legend class="results-filter" i18n:translate="">
-	          Organisations
-	        </legend>
-       
-	        <ul class="results-list">
-	          <tal:block repeat="institution institutions">
-	          <li>
-	            <a tal:attributes="href string:${here/absolute_url}/search?institution=${institution}" 
-	              tal:content="institution" />
-	          </li>
-	          </tal:block>
-	        </ul>
-	      </fieldset>
-     
-	      <fieldset class="results-fieldset">
-	        <legend class="results-filter" i18n:translate="">
-	          Collections
-	        </legend>
-       
-	        <ul class="results-list">
-	          <tal:block repeat="collection collections">
-	          <li>
-	            <a tal:attributes="href string:${here/absolute_url}/search?collection=${collection}" 
-	              tal:content="collection" />
-	          </li>
-	          </tal:block>
-	        </ul>
-	      </fieldset>
-      
-			or you can see <a tal:attributes="href string:${here/absolute_url}/search" i18n:translate="">all results</a>
-			</tal:block>
-			<p i18n:translate="" tal:condition="python:not(institutions and collections)">There are no records in the database to match your query. 
-								Please remove some of your search terms in order to expand your search and try again.
-			</p>
+  <metal:block fill-slot="body">
+    <div id="center_content" tal:define="institutions options/institutions;
+                       collections options/collections">
+      <h1 i18n:translate="">Metadata</h1>
+      <p>
+        <a class="link-button" tal:attributes="href string:${here/absolute_url}?reset_search=True" i18n:translate="">New search</a>
+        <a class="link-button" tal:attributes="href string:${here/absolute_url}" i18n:translate="">Modify search</a>
+      </p>
+      <tal:block condition="python:institutions or collections">
+      <p i18n:translate="">You can filter the results by:</p>
 
-		</div>
-	</metal:block>
+      <fieldset class="results-fieldset">
+          <legend class="results-filter" i18n:translate="">
+            Organisations
+          </legend>
+          <form name="frm_institutions" action="search" method="post">
+            <ul class="results-list">
+              <tal:block repeat="institution institutions">
+              <li tal:define="quoted_value python:here.quote_value(institution)">
+                <input type="checkbox" name="institution" tal:attributes="value institution" />
+                <a tal:attributes="href string:${here/absolute_url}/search?institution=${quoted_value}"
+                  tal:content="institution" />
+                <span tal:content="python: '(%d)' % institutions[institution]" />
+              </li>
+              </tal:block>
+            </ul>
+            <input type="submit" value="Display selected" i18n:attributes="value" />
+          </form>
+        </fieldset>
+
+        <fieldset class="results-fieldset">
+          <legend class="results-filter" i18n:translate="">
+            Collections
+          </legend>
+          <form name="frm_collections" action="search" method="post">
+            <ul class="results-list">
+              <tal:block repeat="collection collections">
+              <li tal:define="quoted_value python:here.quote_value(collection)">
+                <input type="checkbox" name="collection" tal:attributes="value collection" />
+                <a tal:attributes="href string:${here/absolute_url}/search?collection=${quoted_value}"
+                  tal:content="collection" />
+                <span tal:content="python: '(%d)' % collections[collection]" />
+              </li>
+              </tal:block>
+            </ul>
+            <input type="submit" value="Display selected" i18n:attributes="value" />
+          </form>
+        </fieldset>
+
+      or you can see <a tal:attributes="href string:${here/absolute_url}/search" i18n:translate="">all results</a>
+      </tal:block>
+      <p i18n:translate="" tal:condition="python:not(institutions and collections)">There are no records in the database to match your query.
+                Please remove some of your search terms in order to expand your search and try again.
+      </p>
+
+    </div>
+  </metal:block>
 
 </metal:block>

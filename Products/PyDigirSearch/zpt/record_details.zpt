@@ -1,0 +1,82 @@
+<tal:block define="record python: here.get_record_details(request.get('id'))">
+  <table tal:condition="record">
+    <tr>
+      <td style="vertical-align: top !important; width: 300px;">
+        <span class="collection-details">
+          <strong i18n:translate="">Collection number:</strong>
+          <span tal:content="record/CollectionCode" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Country:</strong>
+          <span tal:content="record/Country" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">County:</strong>
+          <span tal:content="record/County" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Locality:</strong>
+          <span tal:content="record/Locality" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Latitude:</strong>
+          <span tal:attributes="id string:lat_${request/id}" tal:content="record/Latitude" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Longitude:</strong>
+          <span tal:attributes="id string:lon_${request/id}" tal:content="record/Longitude" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Date collected:</strong>
+          <span>
+            <span tal:condition="record/YearCollected" tal:content="string:${record/YearCollected}" />
+            <span tal:condition="record/MonthCollected"  tal:content="string:/${record/MonthCollected}" />
+            <span tal:condition="record/DayCollected" tal:content="string:/${record/DayCollected}" />
+          </span><em>(yyyy/mm/dd)</em>
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Family:</strong>
+          <span tal:content="record/Family" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Genus:</strong>
+          <span tal:content="record/Genus" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Species:</strong>
+          <span tal:content="record/Species" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Notes:</strong>
+          <span tal:content="record/Notes" />
+        </span>
+
+        <span class="collection-details">
+          <strong i18n:translate="">Details:</strong>
+          <a tal:attributes="href string:${here/absolute_url}/details?id=${request/id}"
+             tal:content="string:${here/absolute_url}/details?id=${request/id}" />
+        </span>
+
+        <div class="clear">&nbsp;</div>
+
+      </td>
+      <td style="vertical-align: top !important;">
+        <div class="PyDigirMapContainer">
+          <div class="PyDigirMap" tal:attributes="id string:minimap_${request/id}">
+            <p i18n:translate="">No coordinates</p>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</tal:block>

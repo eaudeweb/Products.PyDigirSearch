@@ -2,9 +2,9 @@ import PyDigirSearch
 from App.ImageFile import ImageFile
 
 def initialize(context):
-    """ 
+    """
         Product initialization method
-        @param context: Zope server context 
+        @param context: Zope server context
     """
     context.registerClass(
         PyDigirSearch.PyDigirSearch,
@@ -19,4 +19,5 @@ misc_ = {
     'search_digir.js':ImageFile('www/js/search_digir.js', globals()),
     'arrows.gif':ImageFile('www/arrows.gif', globals()),
     's.gif':ImageFile('www/s.gif', globals()),
+    'marker.png':ImageFile('www/marker.png', globals()),
 }

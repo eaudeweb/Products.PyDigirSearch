@@ -5,7 +5,10 @@ except ImportError:
     import simplejson as json
 
 from datetime import datetime
+from urllib2 import urlopen
+from urllib import urlencode
 import time
+import urllib
 
 from OFS.SimpleItem import SimpleItem
 from App.class_init import InitializeClass
@@ -15,9 +18,9 @@ from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 
 from naaya.core.paginator import DiggPaginator, EmptyPage, InvalidPage
 from naaya.core.utils import force_to_unicode
+from Products.NaayaCore.GeoMapTool.managers.kml_gen import kml_generator
 
 from MySQLConnector import MySQLConnector
-
 
 manage_add_html = PageTemplateFile('zpt/manage_add', globals())
 def manage_add_search(self, id, REQUEST=None):
@@ -32,8 +35,6 @@ def manage_add_search(self, id, REQUEST=None):
 from Products.NaayaCore.LayoutTool.DiskFile import allow_path
 allow_path('Products.PyDigirSearch:www/css/')
 
-items_per_page = 10
-
 QUERY_TERMS = {
     'InstitutionCode': 'equals',
     'CollectionCode': 'equals',
@@ -41,10 +42,10 @@ QUERY_TERMS = {
     'Family': 'equals',
     'Genus': 'like',
     'Species': 'like',
-    'ScientificNameAuthor': 'like',
-    'Country': 'equals',
+    'Country': 'like',
     'Locality': 'like',
     }
+
 
 class PyDigirSearch(SimpleItem):
     """
@@ -52,6 +53,8 @@ class PyDigirSearch(SimpleItem):
     """
     meta_type = 'Search DiGIR Provider'
     security = ClassSecurityInfo()
+
+    items_per_page = 20
 
     manage_options = (
         SimpleItem.manage_options
@@ -73,9 +76,15 @@ class PyDigirSearch(SimpleItem):
         self.mysql_connection['name'] = 'repository'
         self.mysql_connection['user'] = 'cornel'
         self.mysql_connection['pass'] = 'cornel'
+        self.solr_connection = 'http://localhost:8983/solr'
 
+    _index_html = PageTemplateFile('zpt/index', globals())
     security.declareProtected(view, 'index_html')
-    index_html = PageTemplateFile('zpt/index', globals())
+    def index_html(self, REQUEST=None):
+        """ """
+        if not self.get_solr_status():
+            self.setSessionErrorsTrans('Error accessing solr server')
+        return self._index_html()
 
     security.declareProtected(view, 'metadata_html')
     metadata_html = PageTemplateFile('zpt/metadata', globals())
@@ -106,6 +115,8 @@ class PyDigirSearch(SimpleItem):
         self.mysql_connection['user'] = params.pop('mysql_user')
         self.mysql_connection['pass'] = params.pop('mysql_pass')
 
+        self.solr_connection = params.pop('solr_connection')
+
         self._p_changed = 1
         self.recatalogNyObject(self)
         if REQUEST: REQUEST.RESPONSE.redirect('manage_edit_html?save=ok')
@@ -120,370 +131,295 @@ class PyDigirSearch(SimpleItem):
     def str2date(self, date_string):
         return datetime(*(time.strptime(date_string, '%d/%m/%Y')[0:3]))
 
+    def quote_value(self, s):
+        """ """
+        return urllib.quote(s)
+
+	security.declarePrivate('get_solr_status')
+    def get_solr_status(self):
+        """ """
+        try:
+            conn = urlopen('%s/dataimport?command=status&wt=json' % self.solr_connection)
+            result = json.load(conn)
+            return result['responseHeader']['status'] == 0
+        except:
+            return False
+
+    security.declareProtected(view, 'get_field_results')
+    def get_field_results(self, query, searched_field, query_field=None):
+        """ """
+        if query_field is None:
+            query_field = searched_field
+
+        query = {'q': '%s:%s*' % (query_field, query.lower()),
+                'fq': 'entity_type:%s' % searched_field,
+                'wt': 'json',
+                'rows': 100}
+
+        url = u"%s/select/?%s" % (self.solr_connection, urlencode(query))
+        conn = urlopen(url)
+
+        result = json.load(conn)
+        return [r[searched_field] for r in result['response']['docs']]
+
+    security.declareProtected(view, 'get_json')
+    def get_json(self, REQUEST=None, query='', searched_field='Family', query_field=None):
+        """ """
+        records = self.get_field_results(query, searched_field, query_field)
+        return json.dumps(records)
+
+    security.declarePrivate('get_query_string')
+    def get_query_string(self, request):
+        query_items = []
+
+        for qt, qv in request.SESSION.items():
+            if qt == 'filter_by_InstitutionCode':
+                query_filters = 'InstitutionCode: (%s)' % ' OR '.join('"%s"' % v for v in qv.split('++'))
+                query_items.append(query_filters)
+
+            if qt == 'filter_by_CollectionCode':
+                query_filters = 'CollectionCode: (%s)' % ' OR '.join('"%s"' % v for v in qv.split('++'))
+                query_items.append(query_filters)
+
+            if qv and qt in QUERY_TERMS:
+                if QUERY_TERMS[qt] == 'equals':
+                    query_items.append('%s:"%s"' % (qt, qv))
+                elif QUERY_TERMS[qt] == 'like':
+                    query_items.append('%s:"%s"' % (qt, qv))
+
+        start_year = request.SESSION.get('CollectionDateStartYear')
+        start_month = request.SESSION.get('CollectionDateStartMonth')
+        start_day = request.SESSION.get('CollectionDateStartDay')
+        if not start_year:
+            start_year = 1750
+            start_month = 1
+            start_day = 1
+        elif not start_month:
+            start_month = 1
+            start_day = 1
+        elif not start_day:
+            start_day = 1
+
+        end_year = request.SESSION.get('CollectionDateEndYear')
+        end_month = request.SESSION.get('CollectionDateEndMonth')
+        end_day = request.SESSION.get('CollectionDateEndDay')
+        if not end_year:
+            end_year = datetime.now().year + 100
+            end_month = 12
+            end_day = 31
+        elif not end_month:
+            end_month = 12
+            end_day = 31
+        elif not end_day:
+            end_day = 31
+
+        year_range = '{%s TO %s}' % (start_year, end_year)
+        start_month_range = '{%s TO 13}' % start_month
+        start_day_range = '[%s TO 31]' % start_day
+        end_month_range = '{-1 TO %s}' % end_month
+        end_day_range = '[0 TO %s]' % end_day
+        date_query_items = ['YearCollected:%s' % year_range,
+                '(YearCollected:%s AND MonthCollected:%s)' % (start_year, start_month_range),
+                '(YearCollected:%s AND MonthCollected:%s AND DayCollected:%s)' % (start_year, start_month, start_day_range),
+                '(YearCollected:%s AND MonthCollected:%s)' % (end_year, end_month_range),
+                '(YearCollected:%s AND MonthCollected:%s AND DayCollected:%s)' % (end_year, end_month, end_day_range),
+                ]
+        if request.SESSION.get('AllResults'):
+            date_query_items.append('YearCollected:0')
+
+        date_query_string = '(%s)' % (' OR '.join(date_query_items))
+        query_items.append(date_query_string)
+
+        return ' AND '.join(query_items).encode('utf-8')
+
     security.declareProtected(view, 'metadata')
     def metadata(self, REQUEST):
         """ """
-        dbconn = self.open_dbconnection()
-
         if REQUEST.REQUEST_METHOD == 'POST':
             REQUEST.SESSION.clear()
             for qt in QUERY_TERMS.keys():
                 if REQUEST.get(qt):
                     self.setSession(qt, REQUEST.get(qt))
 
-            if REQUEST.get('CollectionDateStart'):
-                self.setSession('StartDate', self.str2date(REQUEST.get('CollectionDateStart')))
-                self.setSession('CollectionDateStart', REQUEST.get('CollectionDateStart'))
-            if REQUEST.get('CollectionDateEnd'):
-                self.setSession('EndDate', self.str2date(REQUEST.get('CollectionDateEnd')))
-                self.setSession('CollectionDateEnd', REQUEST.get('CollectionDateEnd'))
+            start_year = REQUEST.get('CollectionDateStartYear')
+            if start_year:
+                self.setSession('CollectionDateStartYear', start_year)
+            start_month = REQUEST.get('CollectionDateStartMonth')
+            if start_month:
+                self.setSession('CollectionDateStartMonth', start_month)
+            start_day = REQUEST.get('CollectionDateStartDay')
+            if start_day:
+                self.setSession('CollectionDateStartDay', start_day)
+
+            end_year = REQUEST.get('CollectionDateEndYear')
+            if end_year:
+                self.setSession('CollectionDateEndYear', end_year)
+            end_month = REQUEST.get('CollectionDateEndMonth')
+            if end_month:
+                self.setSession('CollectionDateEndMonth', end_month)
+            end_day = REQUEST.get('CollectionDateEndDay')
+            if end_day:
+                self.setSession('CollectionDateEndDay', end_day)
+
             if REQUEST.get('AllResults'):
                 self.setSession('AllResults', REQUEST.get('AllResults'))
 
+        institutions, collections = self.get_metadata(REQUEST)
 
-        institutions, collections = self.get_metadata(dbconn, REQUEST)
-        dbconn.close()
-
-        institutions.sort()
-        collections.sort()
         return self.metadata_html(REQUEST, institutions=institutions, collections=collections)
+
+    security.declarePrivate('get_metadata')
+    def get_metadata(self, request):
+        def get_results(filter):
+            ret = {}
+            for i, r in enumerate(filter):
+                if i % 2 == 0:
+                    key = r
+                else:
+                    ret[key] = r
+            return ret
+
+        query = [('q', self.get_query_string(request)),
+                    ('rows', 0),
+                    ('facet', 'on'),
+                    ('facet.field', 'CollectionCode'),
+                    ('facet.field', 'InstitutionCode'),
+                    ('facet.mincount', 1),
+                    ('wt', 'json')]
+
+        url = "%s/select/?%s" % (self.solr_connection, urlencode(query))
+        conn = urlopen(url)
+        filters = json.load(conn)['facet_counts']['facet_fields']
+
+        return (get_results(filters['InstitutionCode']),
+                get_results(filters['CollectionCode']))
 
     security.declareProtected(view, 'search')
     def search(self, REQUEST):
         """ """
-        dbconn = self.open_dbconnection()
+        #put filters on session
+        institutions = REQUEST.form.get('institution', [])
+        if not isinstance(institutions, list):
+            institutions = [institutions]
 
-        records, match_count = self.search_database(dbconn, REQUEST)
-        dbconn.close()
-        all_records = [number for number in range(int(match_count[0].get('counter')))]
-        pages = self.itemsPaginator(all_records, REQUEST)
+        if institutions:
+            self.setSession('filter_by_InstitutionCode', '++'.join(institutions))
 
-        return self.results_html(REQUEST, records=records, pages=pages)
+        collections = REQUEST.form.get('collection', [])
+        if not isinstance(collections, list):
+            collections = [collections]
 
-    def itemsPaginator(self, records, REQUEST):
-        """ """
-        paginator = DiggPaginator(records, items_per_page, body=5, padding=2, orphans=0)   #Show 10 documents per page
+        if collections:
+            self.setSession('filter_by_CollectionCode', '++'.join(collections))
 
-        # Make sure page request is an int. If not, deliver first page.
-        try:
-            page = int(REQUEST.get('page', '1'))
-        except ValueError:
-            page = 1
-
-        # If page request (9999) is out of range, deliver last page of results.
-        try:
-            items = paginator.page(page)
-        except (EmptyPage, InvalidPage):
-            items = paginator.page(paginator.num_pages)
-
-        return items
-
-    security.declareProtected(view, 'get_institutions')
-    def get_institutions(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_institutioncode AS InstitutionCode
-                                FROM darwin
-                                WHERE darwin.darwin_institutioncode LIKE "%s%%"
-                                ORDER BY InstitutionCode LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_collections')
-    def get_collections(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_collectioncode AS CollectionCode
-                                FROM darwin
-                                WHERE darwin.darwin_collectioncode LIKE "%s%%"
-                                ORDER BY CollectionCode LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_countries')
-    def get_countries(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_country AS Country
-                                FROM darwin
-                                WHERE darwin.darwin_country LIKE "%s%%"
-                                ORDER BY Country LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_basisofrecords')
-    def get_basisofrecords(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_basisofrecord AS BasisOfRecord
-                                FROM darwin
-                                WHERE darwin.darwin_basisofrecord LIKE "%s%%"
-                                ORDER BY BasisOfRecord""" % query)
-
-    security.declareProtected(view, 'get_families')
-    def get_families(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_family AS Family
-                                FROM darwin
-                                WHERE darwin.darwin_family LIKE "%s%%"
-                                ORDER BY Family""" % query)
-
-    security.declareProtected(view, 'get_genus_by_family')
-    def get_genus_by_family(self, family, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus
-                                FROM darwin
-                                WHERE darwin.darwin_family = "%s"
-                                ORDER BY Genus""" % family)
-
-    security.declareProtected(view, 'get_genus')
-    def get_genus(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_genus AS Genus
-                                FROM darwin
-                                WHERE darwin.darwin_genus LIKE "%s%%"
-                                ORDER BY Genus LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_species_by_genus')
-    def get_species_by_genus(self, genus, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species
-                                FROM darwin
-                                WHERE darwin.darwin_genus = "%s"
-                                ORDER BY Species""" % genus)
-
-    security.declareProtected(view, 'get_species')
-    def get_species(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_species AS Species
-                                FROM darwin
-                                WHERE darwin.darwin_species LIKE "%s%%"
-                                ORDER BY Species LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_names')
-    def get_names(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_scientificnameauthor AS ScientificNameAuthor
-                                FROM darwin
-                                WHERE darwin.darwin_scientificnameauthor LIKE "%s%%"
-                                ORDER BY ScientificNameAuthor LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_countries')
-    def get_countries(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_country AS Country
-                                FROM darwin
-                                WHERE darwin.darwin_country LIKE "%s%%"
-                                ORDER BY Country LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_localities')
-    def get_localities(self, query, dbconn):
-        """ """
-        return dbconn.query(u"""SELECT DISTINCT darwin.darwin_locality AS Locality
-                                FROM darwin
-                                WHERE darwin.darwin_locality LIKE "%s%%"
-                                ORDER BY Locality LIMIT 100""" % query)
-
-    security.declareProtected(view, 'get_json')
-    def get_json(self, REQUEST=None, type='families', value=None):
-        """ """
-        value = force_to_unicode(value)
-        dbconn = self.open_dbconnection()
-
-        records = {}
-        if type == 'institutions':
-            records = self.get_institutions(value, dbconn)
-        elif type == 'collections':
-            records = self.get_collections(value, dbconn)
-        elif type == 'basisofrecords':
-            records = self.get_basisofrecords(value, dbconn)
-        elif type == 'families':
-            records = self.get_families(value, dbconn)
-        elif type == 'genus':
-            records = self.get_genus(value, dbconn)
-        elif type == 'genus_by_family':
-            records = self.get_genus_by_family(value, dbconn)
-        elif type == 'species':
-            records = self.get_species(value, dbconn)
-        elif type == 'species_by_genus':
-            records = self.get_species_by_genus(value, dbconn)
-        elif type == 'countries':
-            records = self.get_countries(value, dbconn)
-        elif type == 'localities':
-            records = self.get_localities(value, dbconn)
-        elif type == 'names':
-            records = self.get_names(value, dbconn)
-        dbconn.close()
-        return json.dumps(records)
+        records, records_found = self.search_database(rows = self.items_per_page,
+                                                      request = REQUEST)
+        return self.results_html(REQUEST,
+                                 records = records,
+                                 fake_records = range(int(records_found)))
 
     security.declarePrivate('search_database')
-    def search_database(self, dbconn, request):
-
-        sort_pieces = request.get('skey', 'CollectionCode').split('_')
-        if len(sort_pieces) > 1:
-            sort_order = 'DESC'
-        else:
-            sort_order = 'ASC'
-        sort_on = 'darwin.darwin_%s' % sort_pieces[0].lower()
+    def search_database(self, rows, request):
+        """ """
+        query_string = self.get_query_string(request)
+        sort_on = request.get('sort', 'CollectionCode asc')
 
         try:
             page = int(request.get('page', '1'))
         except ValueError:
             page = 1
-        start = (page-1)*items_per_page
 
-        query_terms = [ qt for qt, qv in request.SESSION.items() if qv and qt in QUERY_TERMS]
-        if query_terms:
-            sql_condition = 'WHERE '
-        else:
-            sql_condition = ''
+        query = {'q': query_string,
+                'sort': sort_on,
+                'rows': rows,
+                'start':  (page-1)*self.items_per_page,
+                'wt': 'json'}
 
-        for qt in query_terms:
-            if QUERY_TERMS[qt] == 'equals':
-                sql_condition += u"%s = '%s'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
-            elif QUERY_TERMS[qt] == 'like':
-                sql_condition += u"%s LIKE '%s%%'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
-            if query_terms.index(qt) < len(query_terms)-1:
-                sql_condition += u" AND "
+        url = "%s/select/?%s" % (self.solr_connection, urlencode(query))
+        conn = urlopen(url)
+        result = json.load(conn)
+        return result['response']['docs'], result['response']['numFound']
 
-        start_date = request.SESSION.get('StartDate', None)
-        end_date = request.SESSION.get('StartEnd', None)
+    security.declareProtected(view, 'record_details_html')
+    record_details_html = PageTemplateFile('zpt/record_details', globals())
 
-        if start_date:
-            if sql_condition == '':
-                sql_condition = u"WHERE "
-            else:
-                sql_condition += u" AND "
+    security.declareProtected(view, 'get_record_details')
+    def get_record_details(self, id):
+        """ get record details """
+        dbconn = self.open_dbconnection()
+        result = dbconn.query(u"""
+                SELECT darwin_collectioncode AS CollectionCode,
+                      darwin_institutioncode AS InstitutionCode,
+                      darwin_catalognumber as CatalogNumber,
+                      darwin_scientificname AS ScientificName,
+                      darwin_basisofrecord AS BasisOfRecord,
+                      darwin_kingdom AS Kingdom,
+                      darwin_phylum AS Phylum,
+                      darwin_class AS Class,
+                      darwin_order AS `Order`,
+                      darwin_family AS Family,
+                      darwin_genus AS Genus,
+                      darwin_species AS Species,
+                      darwin_subspecies AS Subspecies,
+                      darwin_scientificnameauthor AS ScientificNameAuthor,
+                      darwin_typestatus AS TypeStatus,
+                      darwin_collector AS Collector,
+                      darwin_yearcollected AS YearCollected,
+                      darwin_monthcollected AS MonthCollected,
+                      darwin_daycollected AS DayCollected,
+                      darwin_continentocean AS ContinentOcean,
+                      darwin_country AS Country,
+                      darwin_county AS County,
+                      darwin_locality AS Locality,
+                      darwin_longitude AS Longitude,
+                      darwin_latitude AS Latitude,
+                      darwin_sex AS Sex,
+                      darwin_notes AS Notes
+                  FROM darwin
+                  WHERE record_id=%s""" % id)
+        dbconn.close()
+        if result:
+            return result[0]
 
-            if request.SESSION.get('AllResults', None):
-                sql_condition += u"""(darwin.darwin_yearcollected >= %s or darwin.darwin_yearcollected is NULL) 
-                                    AND (darwin.darwin_monthcollected >= %s or darwin.darwin_monthcollected is NULL) 
-                                    AND (darwin.darwin_daycollected >= %s or darwin.darwin_daycollected is NULL) """ % \
-                                    (start_date.year, start_date.month, start_date.day)
-            else:
-                sql_condition += u"""darwin.darwin_yearcollected >= %s AND darwin.darwin_monthcollected >= %s AND darwin.darwin_daycollected >= %s""" % \
-                                    (start_date.year, start_date.month, start_date.day)
+    security.declareProtected(view, 'download_kml')
+    def download_kml(self, REQUEST):
+        """ """
 
-        if end_date:
-            if sql_condition == '':
-                sql_condition = u"WHERE "
-            else:
-                sql_condition += u" AND "
+        output = []
+        out_app = output.append
 
-            if request.SESSION.get('AllResults', None):
-                sql_condition += u"""(darwin.darwin_yearcollected <= %s or darwin.darwin_yearcollected is NULL) 
-                                    AND (darwin.darwin_monthcollected <= %s or darwin.darwin_monthcollected is NULL) 
-                                    AND (darwin.darwin_daycollected <= %s or darwin.darwin_daycollected is NULL) """ % \
-                                    (end_date.year, end_date.month, end_date.day)
-            else:
-                sql_condition += u"""darwin.darwin_yearcollected <= %s AND darwin.darwin_monthcollected <= %s AND darwin.darwin_daycollected <= %s""" % \
-                                    (end_date.year, end_date.month, end_date.day)
+        kml = kml_generator()
+        out_app(kml.header())
+        out_app(kml.style())
 
-        if request.has_key('institution') and 'InstitutionCode' not in query_terms:
-            sql_condition += u" AND darwin.darwin_institutioncode = '%s'" % request.get('institution')
+        records, records_found = self.search_database(rows=1000, request=REQUEST)
+        for record in records:
+                out_app(kml.add_point(self.utToUtf8(record['id']),
+                                      self.utXmlEncode(record.get('ScientificName', '')),
+                                      self.utXmlEncode(record.get('Notes', '')),
+                                      '%s/misc_/PyDigirSearch/marker.png' % self.absolute_url(),
+                                      self.utToUtf8(record.get('Longitude', '')),
+                                      self.utToUtf8(record.get('Latitude', '')),
+                                      self.utToUtf8('%s, %s' %
+                                                    (record.get('Family', ''),
+                                                     record.get('Genus', ''))
+                                                   ),
+                                      self.absolute_url(),
+                                      self.absolute_url(),
+                                      '%s/details?id=%s' % (self.absolute_url(),
+                                                            record['id']),
+                                      self.utXmlEncode('%s, %s' %
+                                                       (record.get('Locality', ''),
+                                                       (record.get('Country', ''))))
+                                        )
+                        )
 
-        if request.has_key('collection') and 'CollectionCode' not in query_terms:
-            sql_condition += u" AND darwin.darwin_collectioncode = '%s'" % request.get('collection')
+        out_app(kml.footer())
+        REQUEST.RESPONSE.setHeader('Content-Type', 'application/vnd.google-earth.kml+xml')
+        REQUEST.RESPONSE.setHeader('Content-Disposition', 'attachment;filename=records.kml')
+        return '\n'.join(output)
 
-        sql = u"""SELECT darwin.darwin_collectioncode AS CollectionCode,
-                        darwin.darwin_institutioncode AS InstitutionCode,
-                        darwin.darwin_scientificname AS ScientificName,
-                        darwin.darwin_basisofrecord AS BasisOfRecord,
-                        darwin.darwin_kingdom AS Kingdom,
-                        darwin.darwin_phylum AS Phylum,
-                        darwin.darwin_class AS Class,
-                        darwin.darwin_order AS `Order`,
-                        darwin.darwin_family AS Family,
-                        darwin.darwin_genus AS Genus,
-                        darwin.darwin_species AS Species,
-                        darwin.darwin_subspecies AS Subspecies,
-                        darwin.darwin_scientificnameauthor AS ScientificNameAuthor,
-                        darwin.darwin_typestatus AS TypeStatus,
-                        darwin.darwin_collector AS Collector,
-                        darwin.darwin_yearcollected AS YearCollected,
-                        darwin.darwin_monthcollected AS MonthCollected,
-                        darwin.darwin_daycollected AS DayCollected,
-                        darwin.darwin_continentocean AS ContinentOcean,
-                        darwin.darwin_country AS Country,
-                        darwin.darwin_county AS County,
-                        darwin.darwin_locality AS Locality,
-                        darwin.darwin_longitude AS Longitude,
-                        darwin.darwin_latitude AS Latitude,
-                        darwin.darwin_sex AS Sex,
-                        darwin.darwin_notes AS Notes
-                FROM record
-                INNER JOIN document ON record.document_id = document.document_id
-                INNER JOIN folder ON document.folder_id = folder.folder_id
-                INNER JOIN resource ON folder.resource_id = resource.resource_id
-                LEFT JOIN darwin ON record.record_id = darwin.record_id %s
-                ORDER BY %s %s LIMIT %s OFFSET %s""" % (sql_condition, sort_on, sort_order, items_per_page, start)
-
-        records = dbconn.query(sql)
-
-        sql = u"""SELECT count(record.record_id) AS counter
-                FROM record
-                INNER JOIN document ON record.document_id = document.document_id
-                INNER JOIN folder ON document.folder_id = folder.folder_id
-                INNER JOIN resource ON folder.resource_id = resource.resource_id
-                LEFT JOIN darwin ON record.record_id = darwin.record_id %s""" % sql_condition
-        match_count = dbconn.query(sql)
-
-        return records, match_count
-
-    security.declarePrivate('get_metadata')
-    def get_metadata(self, dbconn, request):
-
-        query_terms = [ qt for qt, qv in request.SESSION.items() if qv and qt in QUERY_TERMS]
-        if query_terms:
-            sql_condition = 'WHERE '
-        else:
-            sql_condition = ''
-
-        for qt in query_terms:
-            if QUERY_TERMS[qt] == 'equals':
-                sql_condition += u"%s = '%s'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
-            elif QUERY_TERMS[qt] == 'like':
-                sql_condition += u"%s LIKE '%s%%'" % ('darwin.darwin_%s' % qt.lower(), request.SESSION.get(qt))
-            if query_terms.index(qt) < len(query_terms)-1:
-                sql_condition += u" AND "
-
-        start_date = request.SESSION.get('StartDate', None)
-        end_date = request.SESSION.get('StartEnd', None)
-
-        if start_date:
-            if sql_condition == '':
-                sql_condition = u"WHERE "
-            else:
-                sql_condition += u" AND "
-
-            if request.SESSION.get('AllResults', None):
-                sql_condition += u"""(darwin.darwin_yearcollected >= %s or darwin.darwin_yearcollected is NULL) 
-                                    AND (darwin.darwin_monthcollected >= %s or darwin.darwin_monthcollected is NULL) 
-                                    AND (darwin.darwin_daycollected >= %s or darwin.darwin_daycollected is NULL) """ % \
-                                    (start_date.year, start_date.month, start_date.day)
-            else:
-                sql_condition += u"""darwin.darwin_yearcollected >= %s AND darwin.darwin_monthcollected >= %s AND darwin.darwin_daycollected >= %s""" % \
-                                    (start_date.year, start_date.month, start_date.day)
-
-        if end_date:
-            if sql_condition == '':
-                sql_condition = u"WHERE "
-            else:
-                sql_condition += u" AND "
-
-            if request.SESSION.get('AllResults', None):
-                sql_condition += u"""(darwin.darwin_yearcollected <= %s or darwin.darwin_yearcollected is NULL) 
-                                    AND (darwin.darwin_monthcollected <= %s or darwin.darwin_monthcollected is NULL) 
-                                    AND (darwin.darwin_daycollected <= %s or darwin.darwin_daycollected is NULL) """ % \
-                                    (end_date.year, end_date.month, end_date.day)
-            else:
-                sql_condition += u"""darwin.darwin_yearcollected <= %s AND darwin.darwin_monthcollected <= %s AND darwin.darwin_daycollected <= %s""" % \
-                                    (end_date.year, end_date.month, end_date.day)
-
-        sql = u"""SELECT darwin.darwin_collectioncode AS CollectionCode,
-                        darwin.darwin_institutioncode AS InstitutionCode
-                FROM record
-                INNER JOIN document ON record.document_id = document.document_id
-                INNER JOIN folder ON document.folder_id = folder.folder_id
-                INNER JOIN resource ON folder.resource_id = resource.resource_id
-                LEFT JOIN darwin ON record.record_id = darwin.record_id %s
-                GROUP BY CollectionCode, InstitutionCode""" % sql_condition
-
-        institutions = {}
-        collections = {}
-        for record in dbconn.query(sql):
-            institutions.setdefault(record['InstitutionCode'], None)
-            collections.setdefault(record['CollectionCode'], None)
-        return institutions.keys(), collections.keys()
+    security.declareProtected(view, 'details')
+    details = PageTemplateFile('zpt/details', globals())
 
 InitializeClass(PyDigirSearch)

@@ -18,20 +18,34 @@ function options_source(self, request, response){
 	}));
 }
 
-function handle_source(type, request, response){
-	$.getJSON("get_json", {'type': type, 'value': request.term}, function(data){
+function handle_source(searched_field, query_field, request, response) {
+	params = {  'query': request.term, 'searched_field': searched_field };
+	if (query_field) params.query_field = query_field;
+
+	$.getJSON("get_json", params,
+	function(data) {
 		var values = [];
-		$.each(data, function(i, item){
-			for (iterator in item){
-				values.push({
-					label: item[iterator],
-					value: item[iterator],
-					option: this
-				});
-			}
+		$.each(data, function(i, item) {
+			values.push({
+				label:item,
+				value: item,
+				option: this
+			});
 		});
 		response(values);
 	});
+}
+/**
+ * Set select target with the current value.
+*/
+function set_select(obj, ui){
+	//Set value to the select
+	var select = $('#' + obj.attr('target'));
+	// Don't add this option if it's already in select
+	if(select.find("[value="+ ui.item.value +"]").size() === 0){
+		select.append($("<option>").val(ui.item.value));
+	}
+	select.val(ui.item.value).trigger("change");
 }
 
 $(document).ready(function(){
@@ -45,13 +59,7 @@ $.widget("ui.combobox", {
 		},
 		select: function(event, ui) {
 			ui.item.option.selected = true;
-			//Set value to the select
-			var select = $('#' + $(this).attr('target'));
-			// Don't add this option if it's already in select
-			if(select.find("[value="+ ui.item.value +"]").size() === 0){
-				select.append($("<option>").val(ui.item.value));
-			}
-			select.val(ui.item.value).trigger("change");
+			set_select($(this), ui);
 		},
 		change: function(event, ui) {
 			var self = $(this);
@@ -147,7 +155,6 @@ $.widget("ui.combobox", {
 var family_el = $('#Family');
 var genus_el = $('#Genus');
 var species_el = $('#Species');
-var names_el = $('#ScientificNameAuthor');
 var locality_el = $('#Locality');
 var institution_el = $('#InstitutionCode');
 var collection_el = $('#CollectionCode');
@@ -155,11 +162,13 @@ var basisofrecord_el = $('#BasisOfRecord');
 var country_el = $('#Country');
 
 //If the value of family is already set then get all genuses for that specific family
-if(family_el.val() !== ''){
-	$.getJSON('get_json', {'type': 'genus_by_family',
-				  'value': family_el.val()}, function(data){
+if(family_el.val()){
+	$.getJSON('get_json', {searched_field: 'Genus',
+							query: family_el.val(),
+							query_field: 'Family'},
+	function(data){
 		$.each(data, function(){
-			var val = this.Genus;
+			var val = this.toString();
 			// Don't add this option if it's already in select
 			if (genus_el.find("[value="+ val +"]").size() === 0){
 				genus_el.append($("<option>").val(val).text(val));
@@ -170,25 +179,21 @@ if(family_el.val() !== ''){
 
 family_el.combobox({
 	source: function(request, response){
-		handle_source('families', request, response);
+		handle_source('Family', null, request, response);
 	},
 	select: function(event, ui){
 		ui.item.option.selected = true;
-
-		//Set value to the select
-		var select = $('#' + $(this).attr('target'));
-		if(select.find("[value="+ ui.item.value+"]")){
-			select.append($("<option>").val(ui.item.value));
-		}
-		select.val(ui.item.value).trigger("change");
+		set_select($(this), ui);
 
 		genus_el.empty();
 		species_el.empty();
 
-		$.getJSON('get_json', {'type': 'genus_by_family',
-				  'value': ui.item.value}, function(data){
+		$.getJSON('get_json', {searched_field: 'Genus',
+							query: ui.item.value,
+							query_field: 'Family'},
+		function(data){
 			$.each(data, function(){
-				var val = this.Genus;
+				var val = this.toString();
 				if (genus_el.find("[val="+ val +"]").size() === 0){
 					genus_el.append($("<option>").val(val).text(val));
 				}
@@ -202,11 +207,13 @@ family_el.combobox({
 });
 
 //If the value of genus is already set then get all species for that specific genus
-if(genus_el.val() !== ''){
-	$.getJSON('get_json', {'type': 'species_by_genus',
-				  'value': genus_el.val()}, function(data){
+if(genus_el.val()){
+	$.getJSON('get_json', {searched_field: 'Species',
+							query: genus_el.val(),
+							query_field: 'Genus'},
+	function(data){
 		$.each(data, function(){
-			var val = this.Species;
+			var val = this.toString();
 			// Don't add this option if it's already in select
 			if (species_el.find("[value="+ val +"]").size() === 0){
 				species_el.append($("<option>").val(val).text(val));
@@ -220,16 +227,20 @@ genus_el.combobox({
 		if (genus_el.children("option").length > 0){
 			options_source(this, request, response);
 		}else{
-			handle_source('genus', request, response);
+			handle_source('Genus', null, request, response);
 		}
 	},
 	select: function(event, ui){
 		ui.item.option.selected = true;
+		set_select($(this), ui);
+
 		species_el.empty();
-		$.getJSON('get_json', {'type': 'species_by_genus', 'value': ui.item.value},
-				  function(data){
+		$.getJSON('get_json', {searched_field: 'Species',
+							query: ui.item.value,
+							query_field: 'Genus'},
+		function(data){
 			$.each(data, function(){
-				var val = this.Species;
+				var val = this.toString();
 				if (species_el.find("[value="+ val +"]").size() === 0){
 					species_el.append($("<option>").val(val).text(val));
 				}
@@ -247,44 +258,38 @@ species_el.combobox({
 		if (species_el.children("option").length > 0){
 			options_source(this, request, response);
 		}else{
-			handle_source('species', request, response);
+			handle_source('Species', null, request, response);
 		}
 	}
 });
 
 institution_el.combobox({
 	source: function(request, response){
-		handle_source('institutions', request, response);
+		handle_source('InstitutionCode', null, request, response);
 	}
 });
 
 collection_el.combobox({
 	source: function(request, response){
-		handle_source('collections', request, response);
+		handle_source('CollectionCode', null, request, response);
 	}
 });
 
 basisofrecord_el.combobox({
 	source: function(request, response){
-		handle_source('basisofrecords', request, response);
-	}
-});
-
-names_el.combobox({
-	source: function(request, response){
-		handle_source('names', request, response);
+		handle_source('BasisOfRecord', null, request, response);
 	}
 });
 
 country_el.combobox({
 	source: function(request, response){
-		handle_source('countries', request, response);
+		handle_source('Country', null, request, response);
 	}
 });
 
 locality_el.combobox({
 	source: function(request, response){
-		handle_source('localities', request, response);
+		handle_source('Locality', null, request, response);
 	}
 });
 

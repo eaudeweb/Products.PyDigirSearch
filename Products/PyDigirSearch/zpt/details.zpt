@@ -1,0 +1,112 @@
+<metal:block i18n:domain="portal_translations" metal:use-macro="here/standard_template_macro">
+
+<metal:block metal:fill-slot="title">
+  <title tal:content="string:${here/title} | ${here/site_title}" />
+</metal:block>
+
+<metal:block metal:fill-slot="head">
+  <tal:block define="record python: here.get_record_details(request.get('id', ''))">
+    <tal:block condition="record">
+      <meta name="description" tal:attributes="content string:${record/ScientificName}, ${record/CollectionCode}, ${record/Collector}, ${record/Country}">
+      <tal:block content="structure python:here.getGeoMapTool().setup_map_engine_html(request)" />
+      <script type="text/javascript">
+        $(document).ready(function(){
+          if ($('#lat').text().length>0 && $('#lon').text().length>0) {
+            naaya_map_engine.map_with_points('minimap', [{'lat': $('#lat').text(), 'lon': $('#lon').text()}]);
+          }
+        })
+      </script>
+      <link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
+    </tal:block>
+  </tal:block>
+</metal:block>
+
+<metal:block fill-slot="body">
+
+  <tal:block define="record python: here.get_record_details(request.get('id', ''))">
+
+  <div id="center_content" tal:condition="record">
+    <h1 tal:content="record/ScientificName" />
+    <div style="float:right">
+      <div class="PyDigirMapContainer">
+        <div class="PyDigirMap" tal:attributes="id string:minimap" style="width: 450px; height: 300px">
+          <p i18n:translate="">No coordinates</p>
+        </div>
+      </div>
+    </div>
+    <div class="details-container">
+        <dl class="details">
+          <dt i18n:translate="">Catalog number:</dt>
+          <dd tal:content="record/CatalogNumber" />
+
+          <dt i18n:translate="">Collection code:</dt>
+          <dd tal:content="record/CollectionCode" />
+
+          <dt i18n:translate="">Institution code:</dt>
+          <dd tal:content="record/InstitutionCode" />
+
+          <dt i18n:translate="">Kingdom:</dt>
+          <dd tal:content="record/Kingdom" />
+
+          <dt i18n:translate="">Phylum:</dt>
+          <dd tal:content="record/Phylum" />
+
+          <dt i18n:translate="">Class:</dt>
+          <dd tal:content="record/Class" />
+
+          <dt i18n:translate="">Family:</dt>
+          <dd tal:content="record/Family" />
+
+          <dt i18n:translate="">Genus:</dt>
+          <dd tal:content="record/Genus" />
+
+          <dt i18n:translate="">Species:</dt>
+          <dd tal:content="record/Species" />
+
+          <dt i18n:translate="">Subspecies:</dt>
+          <dd tal:content="record/Subspecies" />
+
+          <dt i18n:translate="">Scientific name author:</dt>
+          <dd tal:content="record/ScientificNameAuthor" />
+
+          <dt i18n:translate="">Collector:</dt>
+          <dd tal:content="record/Collector" />
+
+          <dt i18n:translate="">Country:</dt>
+          <dd tal:content="record/Country" />
+
+          <dt i18n:translate="">County:</dt>
+          <dd tal:content="record/County" />
+
+          <dt i18n:translate="">Locality:</dt>
+          <dd tal:content="record/Locality" />
+
+          <dt i18n:translate="">Latitude:</dt>
+          <dd id="lat" tal:content="record/Latitude" />
+
+          <dt i18n:translate="">Longitude:</dt>
+          <dd id="lon" tal:content="record/Longitude" />
+
+          <dt i18n:translate="">
+            Date collected:
+            <em i18n:name="date-format" i18n:translate="">(yyyy/mm/dd)</em>
+          </dt>
+          <dd>
+            <span tal:condition="record/YearCollected" tal:replace="string:${record/YearCollected}" />
+            <span tal:condition="record/MonthCollected"  tal:replace="string:/${record/MonthCollected}" />
+            <span tal:condition="record/DayCollected" tal:replace="string:/${record/DayCollected}" />
+          </dd>
+
+          <dt i18n:translate="">Notes:</dt>
+          <dd tal:content="record/Notes" />
+        </dl>
+    </div>
+  </div>
+  <div id="center_content" tal:condition="not:record">
+    <p i18n:translate="">No records were found corresponding to the specified id.</p>
+  </div>
+  </tal:block>
+
+</metal:block>
+
+</metal:block>

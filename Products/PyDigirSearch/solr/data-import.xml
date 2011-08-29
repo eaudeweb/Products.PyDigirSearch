@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataConfig>
+    <dataSource type="JdbcDataSource"
+                  driver="com.mysql.jdbc.Driver"
+                  url="jdbc:mysql://localhost/repository" batchSize="-1"
+                  user="cornel"
+                  password="cornel"/>
+
+    <document name="records">
+        <entity name="record"
+                query="SELECT record.record_id AS id,
+                        'records' as entity_type,
+                        darwin.darwin_collectioncode AS CollectionCode,
+                        darwin.darwin_institutioncode AS InstitutionCode,
+                        darwin.darwin_basisofrecord AS BasisOfRecord,
+                        darwin.darwin_family AS Family,
+                        darwin.darwin_genus AS Genus,
+                        darwin.darwin_species AS Species,
+                        darwin_scientificnameauthor AS ScientificNameAuthor,
+                        darwin_scientificname AS ScientificName,
+                        IFNULL(darwin.darwin_yearcollected, 0) AS YearCollected,
+                        IFNULL(darwin.darwin_monthcollected, 0) AS MonthCollected,
+                        IFNULL(darwin.darwin_daycollected, 0) AS DayCollected,
+                        darwin.darwin_country AS Country,
+                        darwin.darwin_locality AS Locality,
+                        darwin_longitude AS Longitude,
+                        darwin_latitude AS Latitude,
+                        darwin_notes AS Notes
+                    FROM record
+                    INNER JOIN document ON record.document_id = document.document_id
+                    INNER JOIN folder ON document.folder_id = folder.folder_id
+                    INNER JOIN resource ON folder.resource_id = resource.resource_id
+                    INNER JOIN darwin ON record.record_id = darwin.record_id">
+            <field column="CollectionCode" name="CollectionCode" />
+            <field column="InstitutionCode" name="InstitutionCode" />
+            <field column="BasisOfRecord" name="BasisOfRecord" />
+            <field column="Family" name="Family" />
+            <field column="Genus" name="Genus" />
+            <field column="Species" name="Species" />
+            <field column="ScientificNameAuthor" name="ScientificNameAuthor" />
+            <field column="ScientificName" name="ScientificName" />
+            <field column="YearCollected" name="YearCollected" />
+            <field column="MonthCollected" name="MonthCollected" />
+            <field column="DayCollected" name="DayCollected" />
+            <field column="Country" name="Country" />
+            <field column="Locality" name="Locality" />
+            <field column="Longitude" name="Longitude" />
+            <field column="Latitude" name="Latitude" />
+            <field column="Notes" name="Notes" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="institution"
+                query="SELECT CONCAT('institutioncode-', darwin.record_id) AS id,
+                        'InstitutionCode' as entity_type,
+                        darwin.darwin_institutioncode AS InstitutionCode
+                       FROM darwin
+                       GROUP BY darwin.darwin_institutioncode">
+            <field column="InstitutionCode" name="InstitutionCode" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="collection"
+                query="SELECT CONCAT('collectioncode-', darwin.record_id) AS id,
+                       'CollectionCode' as entity_type,
+                       darwin.darwin_collectioncode AS CollectionCode
+                       FROM darwin
+                       GROUP BY darwin.darwin_collectioncode">
+            <field column="CollectionCode" name="CollectionCode" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="basisofrecord"
+                query="SELECT CONCAT('basisofrecord-', darwin.record_id) AS id,
+                       'BasisOfRecord' as entity_type,
+                       darwin.darwin_basisofrecord AS BasisOfRecord
+                       FROM darwin
+                       GROUP BY darwin.darwin_basisofrecord">
+            <field column="BasisOfRecord" name="BasisOfRecord" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="family"
+                query="SELECT CONCAT('family-', darwin.record_id) AS id,
+                       'Family' as entity_type,
+                       darwin.darwin_family AS Family
+                       FROM darwin
+                       GROUP BY darwin.darwin_family">
+            <field column="Family" name="Family" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="genus"
+                query="SELECT CONCAT('genus-', darwin.record_id) AS id,
+                       'Genus' as entity_type,
+                       darwin.darwin_family AS Family,
+                       darwin.darwin_genus AS Genus
+                       FROM darwin
+                       GROUP BY darwin.darwin_genus">
+            <field column="Genus" name="Genus" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="species"
+                query="SELECT CONCAT('species-', darwin.record_id) AS id,
+                       'Species' as entity_type,
+                       darwin.darwin_genus AS Genus,
+                       darwin.darwin_species AS Species
+                       FROM darwin
+                       GROUP BY darwin.darwin_species">
+            <field column="Species" name="Species" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="country"
+                query="SELECT CONCAT('country-', darwin.record_id) AS id,
+                       'Country' as entity_type,
+                       darwin.darwin_country AS Country
+                       FROM darwin
+                       GROUP BY darwin.darwin_country">
+            <field column="Country" name="Country" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+        <entity name="locality"
+                query="SELECT CONCAT('locality-', darwin.record_id) AS id,
+                       'Locality' as entity_type,
+                       darwin.darwin_locality AS Locality
+                       FROM darwin
+                       GROUP BY darwin.darwin_locality">
+            <field column="Locality" name="Locality" />
+            <field column="entity_type" name="entity_type" />
+        </entity>
+    </document>
+</dataConfig>

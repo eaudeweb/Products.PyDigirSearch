@@ -17,6 +17,8 @@
 	<input type="text" name="mysql_user" size="100" tal:attributes="value here/mysql_connection/user|nothing" />
 	<div class="form-label">MySQL password</div>
 	<input type="text" name="mysql_pass" size="100" tal:attributes="value here/mysql_connection/pass|nothing" />
+	<div class="form-label">Solr host</div>
+	<input type="text" name="solr_connection" size="100" tal:attributes="value here/solr_connection|nothing" />
 	<br/>
 	<br/>
 	<div><input type="submit" value="Save properties" /></div>

@@ -16,7 +16,7 @@
 
 	<metal:block fill-slot="body">
 	<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
-	<div id="center_content" tal:define="dbconn here/open_dbconnection">
+	<div id="center_content">
 		<h1 i18n:translate="">Search</h1>
 		<p i18n:translate="">Please enter your search criteria.</p>
       <form class="search-form" title="search_form" action="metadata" method="post">
@@ -25,7 +25,7 @@
             <td>
               <label for="InstitutionCode" i18n:translate="">Institution code</label>
             </td>
-            
+
             <td>
               <select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
               <tal:block condition="python: request.SESSION.get('InstitutionCode')">
@@ -58,13 +58,13 @@
               </select>
             </td>
           </tr>
-          
+
           <tr>
             <td colspan="2">
               <hr />
             </td>
           </tr>
-          
+
           <tr class="field-inline">
             <td>
               <label for="Family" i18n:translate="">Family</label>
@@ -89,7 +89,7 @@
               </select>
             </td>
           </tr>
-    
+
           <tr class="field-inline">
             <td>
               <label for="Species" i18n:translate="">Species</label>
@@ -102,32 +102,18 @@
               </select>
             </td>
           </tr>
-          
+
           <tr>
             <td colspan="2">
               <hr />
             </td>
           </tr>
-          
-          <tr class="field-inline">
-            <td>
-              <label for="ScientificNameAuthor" i18n:translate="">Scientific Name Author</label>
-            </td>
-            
-            <td>
-              <select id="ScientificNameAuthor" name="ScientificNameAuthor:utf8:ustring">
-                <tal:block condition="python: request.SESSION.get('ScientificNameAuthor')">
-                  <option tal:attributes="value request/SESSION/ScientificNameAuthor" tal:content="request/SESSION/ScientificNameAuthor" selected="selected"></option>
-                </tal:block>
-              </select>
-            </td>
-          </tr>
-          
+
           <tr class="field-inline">
             <td>
               <label for="Country" i18n:translate="">Country</label>
             </td>
-            
+
             <td>
               <select id="Country" name="Country:utf8:ustring">
                 <tal:block condition="python: request.SESSION.get('Country')">
@@ -136,12 +122,12 @@
               </select>
             </td>
           </tr>
-          
+
           <tr class="field-inline">
             <td>
               <label for="Locality" i18n:translate="">Locality</label>
             </td>
-            
+
             <td>
               <select id="Locality" name="Locality:utf8:ustring">
                 <tal:block condition="python: request.SESSION.get('Locality')">
@@ -150,14 +136,25 @@
               </select>
             </td>
           </tr>
-          
+
           <tr class="field-inline">
             <td>
               <label for="CollectionDateStart" i18n:translate="">Collection Date Interval</label>
             </td>
             <td>
-              <input type="text" id="CollectionDateStart" name="CollectionDateStart:utf8:ustring" tal:attributes="value request/SESSION/CollectionDateStart |nothing" /> -
-              <input type="text" id="CollectionDateEnd" name="CollectionDateEnd:utf8:ustring" tal:attributes="value request/SESSION/CollectionDateEnd |nothing" />
+              <input type="text" id="CollectionDateStartDay" name="CollectionDateStartDay:utf8:ustring" size="2" title="start day"
+                tal:attributes="value request/SESSION/CollectionDateStartDay |nothing" />
+              <input type="text" id="CollectionDateStartMonth" name="CollectionDateStartMonth:utf8:ustring" size="2" title="start month"
+                tal:attributes="value request/SESSION/CollectionDateStartMonth |nothing" />
+              <input type="text" id="CollectionDateStartYear" name="CollectionDateStartYear:utf8:ustring" size="4" title="start year"
+                tal:attributes="value request/SESSION/CollectionDateStartYear |nothing" />
+              -
+              <input type="text" id="CollectionDateEndDay" name="CollectionDateEndDay:utf8:ustring" size="2" title="end day"
+                tal:attributes="value request/SESSION/CollectionDateEndDay |nothing" />
+              <input type="text" id="CollectionDateEndMonth" name="CollectionDateEndMonth:utf8:ustring" size="2" title="end month"
+                tal:attributes="value request/SESSION/CollectionDateEndMonth |nothing" />
+              <input type="text" id="CollectionDateEndYear" name="CollectionDateEndYear:utf8:ustring" size="4" title="end year"
+                tal:attributes="value request/SESSION/CollectionDateEndYear |nothing" />
             </td>
           </tr>
           <tr class="field-inline">
@@ -175,23 +172,7 @@
           </tr>
         </table>
       </form>
-	<tal:block define="dummy dbconn/close" />
 	</div>
-    
-    <script type="text/javascript">
-    $(document).ready(function(){
-      $('#CollectionDateStart, #CollectionDateEnd').datepicker({
-        changeMonth: true,
-        changeYear: true,
-        showOtherMonths: true,
-        selectOtherMonths: true,
-        showWeek: true,
-        firstDay: 1,
-        showAnim: 'fadeIn',
-        dateFormat: 'dd/mm/yy'
-      });
-    });
-    </script>
 	</metal:block>
 
 </metal:block>
