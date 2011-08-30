@@ -133,6 +133,8 @@ class PyDigirSearch(SimpleItem):
 
     def quote_value(self, s):
         """ """
+        if isinstance(s, unicode):
+            s = s.encode('utf-8')
         return urllib.quote(s)
 
 	security.declarePrivate('get_solr_status')
