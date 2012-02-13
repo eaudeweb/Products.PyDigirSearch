@@ -2,9 +2,9 @@
 <dataConfig>
     <dataSource type="JdbcDataSource"
                   driver="com.mysql.jdbc.Driver"
-                  url="jdbc:mysql://localhost/repository" batchSize="-1"
-                  user="cornel"
-                  password="cornel"/>
+                  url="jdbc:mysql://power.edw.ro/repository" batchSize="-1"
+                  user="root"
+                  password="pokemon"/>
 
     <document name="records">
         <entity name="record"
