@@ -168,6 +168,7 @@ class PyDigirSearch(SimpleItem):
     def get_json(self, REQUEST=None, query='', searched_field='Family', query_field=None):
         """ """
         records = self.get_field_results(query, searched_field, query_field)
+        records = [{"name": r} for r in records]
         return json.dumps(records)
 
     security.declarePrivate('get_query_string')

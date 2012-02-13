@@ -244,3 +244,6 @@ span.collection-details {
 .details-container {
   float:left;
 }
+.chzn-select {
+  width: 200px;
+}

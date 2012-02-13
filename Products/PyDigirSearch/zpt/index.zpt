@@ -1,24 +1,35 @@
 <metal:block i18n:domain="portal_translations" metal:use-macro="here/standard_template_macro">
 
-	<metal:block metal:fill-slot="title">
-			<title tal:content="string:${here/title} | ${here/site_title}" />
-	</metal:block>
+    <metal:block metal:fill-slot="title">
+            <title tal:content="string:${here/title} | ${here/site_title}" />
+    </metal:block>
 
-	<metal:block metal:fill-slot="head">
-		<link rel="stylesheet" type="text/css" media="screen" tal:attributes="href string:/misc_/PyDigirSearch/digir_search_style.css" />
-		<script src="/misc_/PyDigirSearch/search_digir.js"></script>
-		<style>
-		.ui-button { margin-left: -1px; }
-		.ui-button-icon-only .ui-button-text { padding: 0.35em; }
-		.ui-autocomplete-input { margin: 0; padding: 0.48em 0 0.47em 0.45em; }
-		</style>
-	</metal:block>
+    <metal:block metal:fill-slot="head">
+        <link rel="stylesheet" type="text/css" media="screen"
+              tal:attributes="href string:/++resource++Products.PyDigirSearch/css/digir_search_style.css" />
 
-	<metal:block fill-slot="body">
-	<tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
-	<div id="center_content">
-		<h1 i18n:translate="">Search</h1>
-		<p i18n:translate="">Please enter your search criteria.</p>
+        <link rel="stylesheet" type="text/css" media="screen"
+              tal:attributes="href string:/++resource++Products.PyDigirSearch/css/chosen.css" />
+                          ,
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.1/underscore-min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.string/1.1.6/underscore.string.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.0/backbone-min.js"></script>
+        <script src="/++resource++Products.PyDigirSearch/js/lib/chosen.jquery.js"></script>
+        <script src="/++resource++Products.PyDigirSearch/js/search_digir.js"></script>
+
+
+        <style>
+        .ui-button { margin-left: -1px; }
+        .ui-button-icon-only .ui-button-text { padding: 0.35em; }
+        .ui-autocomplete-input { margin: 0; padding: 0.48em 0 0.47em 0.45em; }
+        </style>
+    </metal:block>
+
+    <metal:block fill-slot="body">
+    <tal:block condition="request/reset_search|nothing" content="request/SESSION/clear"/>
+    <div id="center_content">
+        <h1 i18n:translate="">Search</h1>
+        <p i18n:translate="">Please enter your search criteria.</p>
       <form class="search-form" title="search_form" action="metadata" method="post">
         <table>
           <tr class="field-inline">
@@ -27,7 +38,11 @@
             </td>
 
             <td>
-              <select id="InstitutionCode" name="InstitutionCode:utf8:ustring">
+              <select id="InstitutionCode" name="InstitutionCode:utf8:ustring"
+                      data-placeholder="Choose an Institution Code."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+              <option></option>
               <tal:block condition="python: request.SESSION.get('InstitutionCode')">
                 <option tal:attributes="value request/SESSION/InstitutionCode" tal:content="request/SESSION/InstitutionCode" selected="selected"></option>
               </tal:block>
@@ -39,7 +54,12 @@
               <label for="CollectionCode" i18n:translate="">Collection</label>
             </td>
             <td>
-              <select id="CollectionCode" name="CollectionCode:utf8:ustring">
+              <select id="CollectionCode"
+                      name="CollectionCode:utf8:ustring"
+                      data-placeholder="Choose a Collection Code."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('CollectionCode')">
                   <option tal:attributes="value request/SESSION/CollectionCode" tal:content="request/SESSION/CollectionCode" selected="selected"></option>
                 </tal:block>
@@ -51,7 +71,12 @@
               <label for="BasisOfRecord" i18n:translate="">Basis of Record</label>
             </td>
             <td>
-              <select id="BasisOfRecord" name="BasisOfRecord:utf8:ustring">
+              <select id="BasisOfRecord"
+                      name="BasisOfRecord:utf8:ustring"
+                      data-placeholder="Choose the record basis."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('BasisOfRecord')">
                   <option tal:attributes="value request/SESSION/BasisOfRecord" tal:content="request/SESSION/BasisOfRecord" selected="selected"></option>
                 </tal:block>
@@ -70,7 +95,12 @@
               <label for="Family" i18n:translate="">Family</label>
             </td>
             <td>
-              <select id="Family" name="Family:utf8:ustring">
+              <select id="Family"
+                      name="Family:utf8:ustring"
+                      data-placeholder="Choose a Family."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('Family')">
                   <option tal:attributes="value request/SESSION/Family" tal:content="request/SESSION/Family" selected="selected"></option>
                 </tal:block>
@@ -82,7 +112,12 @@
               <label for="Genus" i18n:translate="">Genus</label>
             </td>
             <td>
-              <select id="Genus" name="Genus:utf8:ustring">
+              <select id="Genus"
+                      name="Genus:utf8:ustring"
+                      data-placeholder="Choose a Genus."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('Genus')">
                   <option tal:attributes="value request/SESSION/Genus" tal:content="request/SESSION/Genus" selected="selected"></option>
                 </tal:block>
@@ -95,7 +130,12 @@
               <label for="Species" i18n:translate="">Species</label>
             </td>
             <td>
-              <select id="Species" name="Species:utf8:ustring">
+              <select id="Species"
+                      name="Species:utf8:ustring"
+                      data-placeholder="Choose a Species."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('Species')">
                   <option tal:attributes="value request/SESSION/Species" tal:content="request/SESSION/Species" selected="selected"></option>
                 </tal:block>
@@ -115,7 +155,12 @@
             </td>
 
             <td>
-              <select id="Country" name="Country:utf8:ustring">
+              <select id="Country"
+                      name="Country:utf8:ustring"
+                      data-placeholder="Choose Country."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('Country')">
                   <option tal:attributes="value request/SESSION/Country" tal:content="request/SESSION/Country" selected="selected"></option>
                 </tal:block>
@@ -129,7 +174,12 @@
             </td>
 
             <td>
-              <select id="Locality" name="Locality:utf8:ustring">
+              <select id="Locality"
+                      name="Locality:utf8:ustring"
+                      data-placeholder="Choose Locality."
+                      i18n:attributes="data-placeholder"
+                      class="chzn-select">
+                <option></option>
                 <tal:block condition="python: request.SESSION.get('Locality')">
                   <option tal:attributes="value request/SESSION/Locality" tal:content="request/SESSION/Locality" selected="selected"></option>
                 </tal:block>
@@ -172,7 +222,7 @@
           </tr>
         </table>
       </form>
-	</div>
-	</metal:block>
+    </div>
+    </metal:block>
 
 </metal:block>
