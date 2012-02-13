@@ -1,0 +1,5 @@
+*.pyc
+*.egg-info
+Products/PyDigirSearch/solr/conf/dataimport.properties
+Products/PyDigirSearch/solr/data/
+Products/PyDigirSearch/solr/lib/
