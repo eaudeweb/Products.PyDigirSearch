@@ -29,12 +29,9 @@
         - render all the <option> elements from "SearchCollection"
     */
     var SearchView = Backbone.View.extend({
-        events: {
-            "click": "fetch",
-            "click .chzn-results li": "hookSelect"
-        },
+        events: { "click": "fetch" },
 
-        initialize: function() {
+        initialize: function () {
             this.collection = new SearchCollection();
             // when the collection is fetched, populate element with data
             this.collection.on("reset", this.populate, this);
@@ -49,10 +46,13 @@
             // callback that runs when the users select an option
             hooks.hookSelect = hooks.hookSelect || new Function();
             _.extend(this, hooks);
+
+            // bind the change event for select parent to hookSelect
+            this.$select_parent.unbind("change").bind("change", this.hookSelect);
         },
 
         // fetch collection if no data
-        fetch: function() {
+        fetch: function () {
             // do not fetch collection if select element has data
             if(this.$select_parent.data("has-data")) { return; }
             var params = this._setFetchParams();
@@ -60,7 +60,7 @@
         },
 
         // populate the select element with data from "SearchCollection"
-        populate: function() {
+        populate: function () {
             var self = this;
             this.collection.each(function(m) {
                 var select_view = new SelectView({ model: m });
@@ -70,7 +70,7 @@
             self.$select_parent.data("has-data", true).trigger("liszt:updated");
         },
 
-        _setFetchParams: function() {
+        _setFetchParams: function () {
             var params = {};
             params.searched_field = this.searched_field;
             if(this.parentData) {
@@ -81,7 +81,9 @@
                 }
             }
             return params;
-        }
+        },
+
+        test: function () { console.log("caca "); }
     });
 
     // handle reset filters
