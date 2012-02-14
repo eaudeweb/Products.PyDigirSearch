@@ -82,16 +82,12 @@
             }
             return params;
         },
-
-        test: function () { console.log("caca "); }
     });
 
     // handle reset filters
     var _resetSelectFields = function () {
        // convert arguments object to array.
-       var args = Array.prototype.slice.call(arguments, 0);
        var $selector = _constructSelectorFromArguments(arguments);
-
        $selector.find(".appended").remove();
        $selector.data("has-data", false).trigger("liszt:updated");
     };
